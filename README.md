@@ -63,12 +63,6 @@ Microsoft Research Asia<sup>3</sup>
 
 
 ### Citation
-If you think this toolkit or the results are helpful to you and your research, please cite us!
+If you think this toolkit or the results are helpful to you and your research, please cite [1]!
 
-```
-@Misc{torchssl,
-howpublished = {\url{https://github.com/TorchSSL/TorchSSL}},   
-title = {TorchSSL: A PyTorch-based Toolbox for Semi-Supervised Learning},  
-author = {Zhang, Bowen, and Wang, Yidong, and Hou, Wenxin, and Wu, Hao}
-}  
 ```
