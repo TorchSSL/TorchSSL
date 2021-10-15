@@ -52,13 +52,22 @@ If you want to write your own algorithm, please follow the following steps:
 
 [1] "FlexMatch: Boosting Semi-Supervised Learningwith Curriculum Pseudo Labeling"
 
+### Maintainer
+Yidong Wang<sup>1</sup>, Hao Wu<sup>2</sup>, Bowen Zhang<sup>1</sup>, Wenxin Hou<sup>1,3</sup>, Jindong Wang<sup>3</sup>
+
+Shinozaki Lab<sup>1</sup> http://www.ts.ip.titech.ac.jp/
+
+Okumura Lab<sup>2</sup> http://lr-www.pi.titech.ac.jp/wp/
+
+Microsoft Research Asia<sup>3</sup>
+
 
 ### Citation
 If you think this toolkit or the results are helpful to you and your research, please cite us!
 
 ```
 @Misc{torchssl,
-howpublished = {\url{https://github.com/18445864529/TorchSSL/}},   
+howpublished = {\url{https://github.com/TorchSSL/TorchSSL}},   
 title = {TorchSSL: A PyTorch-based Toolbox for Semi-Supervised Learning},  
 author = {Zhang, Bowen, and Wang, Yidong, and Hou, Wenxin, and Wu, Hao}
 }  
