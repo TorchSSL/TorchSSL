@@ -308,7 +308,7 @@ class SSL_Dataset:
             ulb_targets = None
         else:
             data, targets = self.get_data()
-            lb_data, lb_targets, ulb_data, ulb_targets = split_ssl_data(data, targets,
+            lb_data, lb_targets, ulb_data, ulb_targets = split_ssl_data(self.args, data, targets,
                                                                         num_labels, self.num_classes,
                                                                         index, include_lb_to_ulb)
         # output the distribution of labeled data for remixmatch
