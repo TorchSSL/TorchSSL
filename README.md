@@ -15,8 +15,9 @@ We support fully supervised training + 8 popular SSL algorithms as listed below:
 6. UDA
 7. ReMixMatch
 8. FixMatch
+9. FlexMatch
 
-Besides, we implement our Curriculum Pseudo Labeling (CPL) method for Pseudo-Label (Flex-Pseudo-Label), FixMatch (FlexMatch), and UDA (Flex-UDA).
+Besides, we implement our Curriculum Pseudo Labeling (CPL) method for Pseudo-Label (Flex-Pseudo-Label) and UDA (Flex-UDA).
 
 We support 5 popular datasets in SSL research as listed below:
 
