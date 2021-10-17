@@ -5,7 +5,7 @@ An all-in-one toolkit based on PyTorch for semi-supervised learning (SSL). We im
 
 ### Implemented Algorithms & Datasets
 
-We support fully supervised training + 8 popular SSL algorithms as listed below:
+We support fully supervised training + 9 popular SSL algorithms as listed below:
 
 1. Pi-Model
 2. MeanTeacher
