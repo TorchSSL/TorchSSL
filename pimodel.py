@@ -321,7 +321,7 @@ if __name__ == "__main__":
                              'multi node data parallel training')
 
     # config file
-    parser.add_argument('-c', type=str, default='')
+    parser.add_argument('--c', type=str, default='')
 
     args = parser.parse_args()
     over_write_args_from_file(args, args.c)
