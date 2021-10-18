@@ -1,3 +1,4 @@
+![avatar](./figures/logo.png)
 # TorchSSL: A PyTorch-based Toolbox for Semi-Supervised Learning
 
 An all-in-one toolkit based on PyTorch for semi-supervised learning (SSL). We implmented 8 popular SSL algorithms to enable fair comparison and boost the development of SSL algorithms.
