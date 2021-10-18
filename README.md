@@ -1,4 +1,4 @@
-<img src="./figures/logo.png" align=center />
+<img src="./figures/logo.png"  width = "100" height = "100" align=center />
 
 # TorchSSL: A PyTorch-based Toolbox for Semi-Supervised Learning
 
