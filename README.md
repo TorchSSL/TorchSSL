@@ -1,7 +1,7 @@
 <img src="./figures/logo.png"  width = "100" height = "100" align=center />
 
 # News
-If you want to join TorchSSL team, please e-mail 646842131@qq.com for more information. We plan to add more SSL algorithms and expand TorchSSL from CV to NLP and Speech.
+If you want to join TorchSSL team, please e-mail 646842131@qq.com or yidongwang37@gmail.com for more information. We plan to add more SSL algorithms and expand TorchSSL from CV to NLP and Speech.
 
 # TorchSSL: A PyTorch-based Toolbox for Semi-Supervised Learning
 
