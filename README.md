@@ -70,7 +70,7 @@ If you think this toolkit or the results are helpful to you and your research, p
 ```
 @article{zhang2021flexmatch},
   title={FlexMatch: Boosting Semi-supervised Learning with Curriculum Pseudo Labeling},
-  author={Zhang, Bowen and Wang, Yidong and Hou Wenxin and Wu, Hao and Wang, Jindong and Okumura, Manabu and Shinozaki, Takahiro},
+  author={Zhang, Bowen and Wang, Yidong and Hou, Wenxin and Wu, Hao and Wang, Jindong and Okumura, Manabu and Shinozaki, Takahiro},
   booktitle={Neural Information Processing Systems (NeurIPS)},
   year={2021}
 }
