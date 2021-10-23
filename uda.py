@@ -73,9 +73,9 @@ def main_worker(gpu, ngpus_per_node, args):
 
     # random seed has to be set for the syncronization of labeled data sampling in each process.
     assert args.seed is not None
-    random.seed(args.seed + args.gpu)
-    torch.manual_seed(args.seed + args.gpu)
-    np.random.seed(args.seed + args.gpu)
+    random.seed(args.seed)
+    torch.manual_seed(args.seed)
+    np.random.seed(args.seed)
     cudnn.deterministic = True
 
     # SET UP FOR DISTRIBUTED TRAINING
