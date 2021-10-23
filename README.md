@@ -77,13 +77,15 @@ If you think this toolkit or the results are helpful to you and your research, p
 ```
 
 ### Maintainer
-Yidong Wang<sup>1</sup>, Hao Wu<sup>2</sup>, Bowen Zhang<sup>1</sup>, Wenxin Hou<sup>1,3</sup>, Jindong Wang<sup>3</sup>
+Yidong Wang<sup>1</sup>, Hao Wu<sup>2</sup>, Bowen Zhang<sup>1</sup>, Wenxin Hou<sup>1,3</sup>, Yuhao Chen<sup>4</sup> Jindong Wang<sup>3</sup>
 
 Shinozaki Lab<sup>1</sup> http://www.ts.ip.titech.ac.jp/
 
 Okumura Lab<sup>2</sup> http://lr-www.pi.titech.ac.jp/wp/
 
 Microsoft Research Asia<sup>3</sup>
+
+Megvii<sup>4</sup>
 
 ### References
 
