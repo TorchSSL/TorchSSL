@@ -1,8 +1,8 @@
 <img src="./figures/logo.png"  width = "100" height = "100" align=center />
 
 # News
-If you want to join TorchSSL team, please e-mail Yidong Wang (646842131@qq.com; yidongwang37@gmail.com) for more information. We plan to add more SSL algorithms and expand TorchSSL from CV to NLP and Speech.
-
+1. We are reorganizing codes and rerunning experiments to make sure the reproducibility of the results. So please pay attention to our updates.
+2. If you want to join TorchSSL team, please e-mail Yidong Wang (646842131@qq.com; yidongwang37@gmail.com) for more information. We plan to add more SSL algorithms and expand TorchSSL from CV to NLP and Speech.
 # TorchSSL: A PyTorch-based Toolbox for Semi-Supervised Learning
 
 An all-in-one toolkit based on PyTorch for semi-supervised learning (SSL). We implmented 9 popular SSL algorithms to enable fair comparison and boost the development of SSL algorithms.
