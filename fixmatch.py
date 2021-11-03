@@ -94,7 +94,7 @@ def main_worker(gpu, ngpus_per_node, args):
     logger_level = "WARNING"
     tb_log = None
     if args.rank % ngpus_per_node == 0:
-        tb_log = TBLog(save_path, 'tensorboard')
+        tb_log = TBLog(save_path, 'tensorboard', writer_type="tensorboard")
         logger_level = "INFO"
 
     logger = get_logger(args.save_name, save_path, logger_level)
