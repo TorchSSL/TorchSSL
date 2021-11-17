@@ -94,7 +94,7 @@ def main_worker(gpu, ngpus_per_node, args):
     logger_level = "WARNING"
     tb_log = None
     if args.rank % ngpus_per_node == 0:
-        tb_log = TBLog(save_path, 'tensorboard')
+        tb_log = TBLog(save_path, 'tensorboard', use_tensorboard=args.use_tensorboard)
         logger_level = "INFO"
 
     logger = get_logger(args.save_name, save_path, logger_level)
@@ -259,6 +259,7 @@ if __name__ == "__main__":
     parser.add_argument('--resume', action='store_true')
     parser.add_argument('--load_path', type=str, default=None)
     parser.add_argument('-o', '--overwrite', action='store_true')
+    parser.add_argument('--use_tensorboard', action='store_true', help='Use tensorboard to plot and save curves, otherwise save the curves locally.')
 
     '''
     Training Configuration of flexmatch
