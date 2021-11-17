@@ -153,10 +153,10 @@ class TBLog:
         """
         if suffix is None:
             suffix = ''
-        if self.writer_type == "tensorboard":
+        if self.use_tensorboard:
             for key, value in tb_dict.items():
                 self.writer.add_scalar(suffix + key, value, it)
-        elif self.writer_type == "custom":
+        else:
             self.writer.set_epoch(it, mode)
             for key, value in tb_dict.items():
                 self.writer.add_scalar(suffix + key, value)
