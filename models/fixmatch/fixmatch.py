@@ -263,8 +263,6 @@ class FixMatch:
                 'eval/precision': precision, 'eval/recall': recall, 'eval/F1': F1, 'eval/AUC': AUC}
 
     def save_model(self, save_name, save_path):
-        # if self.it < 1000000:
-        #     return
         save_filename = os.path.join(save_path, save_name)
         # copy EMA parameters to ema_model for saving with model as temp
         self.model.eval()
@@ -279,16 +277,7 @@ class FixMatch:
                     'it': self.it,
                     'ema_model': ema_model},
                    save_filename)
-        if self.num_classes == 10:
-            tb_path = os.path.join(save_path, 'tensorboard')
-            if not os.path.exists(tb_path):
-                os.makedirs(tb_path, exist_ok=True)
-            with open(os.path.join(save_path, 'tensorboard', 'lst_fix.pkl'), 'wb') as f:
-                pickle.dump(self.lst, f)
-            with open(os.path.join(save_path, 'tensorboard', 'abs_lst.pkl'), 'wb') as h:
-                pickle.dump(self.abs_lst, h)
-            with open(os.path.join(save_path, 'tensorboard', 'clsacc.pkl'), 'wb') as g:
-                pickle.dump(self.clsacc, g)
+
         self.print_fn(f"model saved: {save_filename}")
 
     def load_model(self, load_path):

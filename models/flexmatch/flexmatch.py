@@ -282,8 +282,6 @@ class FlexMatch:
                 'eval/precision': precision, 'eval/recall': recall, 'eval/F1': F1, 'eval/AUC': AUC}
 
     def save_model(self, save_name, save_path):
-        # if self.it < 1000000:
-        #     return
         save_filename = os.path.join(save_path, save_name)
         # copy EMA parameters to ema_model for saving with model as temp
         self.model.eval()
