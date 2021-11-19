@@ -158,7 +158,7 @@ def create_base_config(alg, seed,
 
 # prepare the configuration for baseline model, use_penalty == False
 def exp_baseline(label_amount):
-    config_file = r'../config/baseline_exp/'
+    config_file = r'../config/'
     save_path = r'../saved_models/'
 
     if not os.path.exists(config_file):
@@ -226,13 +226,11 @@ def exp_baseline(label_amount):
                                          weight_decay, depth, widen_factor
                                          )
                 count += 1
-                if alg == 'flexmatch':
-                    cfg['alg'] += '_convex'
                 create_configuration(cfg, config_file)
 
 
 def exp_flex_component(label_amount):
-    config_file = r'../config/baseline_exp/'
+    config_file = r'../config/'
     save_path = r'../saved_models/'
 
     if not os.path.exists(config_file):
