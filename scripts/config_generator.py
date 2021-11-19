@@ -42,6 +42,7 @@ def create_base_config(alg, seed,
     cfg['resume'] = False
     cfg['load_path'] = None
     cfg['overwrite'] = True
+    cfg['use_tensorboard'] = True
 
     # algorithm config
     cfg['epoch'] = 1
@@ -167,10 +168,10 @@ def exp_baseline(label_amount):
 
     algs = ['flexmatch', 'fixmatch', 'uda', 'pseudolabel', 'fullysupervised', 'remixmatch', 'mixmatch', 'meanteacher',
             'pimodel', 'vat']
-    # datasets = ['cifar10', 'cifar100', 'svhn', 'stl10', 'imagenet']
-    datasets = ['imagenet']
+    datasets = ['cifar10', 'cifar100', 'svhn', 'stl10', 'imagenet']
+    # datasets = ['imagenet']
     # seeds = [1, 11, 111]
-    seeds = [1]  # 1, 22, 333
+    seeds = [0]  # 1, 22, 333
 
     dist_port = range(10001, 11120, 1)
     count = 0
@@ -242,7 +243,7 @@ def exp_flex_component(label_amount):
     algs = ['uda', 'pseudolabel']
     datasets = ['cifar10', 'cifar100', 'svhn', 'stl10']
     # seeds = [1, 11, 111]
-    seeds = [22]
+    seeds = [0]
 
     dist_port = range(11121, 12120, 1)
     count = 0
