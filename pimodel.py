@@ -26,6 +26,9 @@ def main(args):
     '''
 
     save_path = os.path.join(args.save_dir, args.save_name)
+    if os.path.exists(save_path) and args.overwrite:
+        import shutil
+        shutil.rmtree(save_path)
     if os.path.exists(save_path) and not args.overwrite:
         raise Exception('already existing model: {}'.format(save_path))
     if args.resume:
