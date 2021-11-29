@@ -26,7 +26,7 @@ def main(args):
     '''
 
     save_path = os.path.join(args.save_dir, args.save_name)
-    if os.path.exists(save_path) and args.overwrite:
+    if os.path.exists(save_path) and args.overwrite and args.resume == True:
         import shutil
         shutil.rmtree(save_path)
     if os.path.exists(save_path) and not args.overwrite:
@@ -168,6 +168,9 @@ def main_worker(gpu, ngpus_per_node, args):
 
     else:
         model.model = torch.nn.DataParallel(model.model).cuda()
+
+    import copy
+    model.ema_model = copy.deepcopy(model.model)
 
     logger.info(f"model_arch: {model}")
     logger.info(f"Arguments: {args}")
