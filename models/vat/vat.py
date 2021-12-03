@@ -169,16 +169,17 @@ class Vat:
                     best_it = self.it
 
                 self.print_fn(
-                    f"{self.it} iteration, {tb_dict}, BEST_EVAL_ACC: {best_eval_acc}, at {best_it} iters")
+                    f"{self.it} iteration, USE_EMA: {self.ema_m != 0}, {tb_dict}, BEST_EVAL_ACC: {best_eval_acc}, at {best_it} iters")
 
-            if not args.multiprocessing_distributed or \
-                    (args.multiprocessing_distributed and args.rank % ngpus_per_node == 0):
+                if not args.multiprocessing_distributed or \
+                        (args.multiprocessing_distributed and args.rank % ngpus_per_node == 0):
 
-                if self.it == best_it:
-                    self.save_model('model_best.pth', save_path)
+                    if self.it == best_it:
+                        self.save_model('model_best.pth', save_path)
 
-                if not self.tb_log is None:
-                    self.tb_log.update(tb_dict, self.it)
+                    if not self.tb_log is None:
+                        self.tb_log.update(tb_dict, self.it)
+
 
             self.it += 1
             del tb_dict
