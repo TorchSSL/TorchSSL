@@ -1,7 +1,7 @@
 <img src="./figures/logo.png"  width = "100" height = "100" align=center />
 
 # News
-1. We are reorganizing codes and rerunning experiments to make sure the reproducibility of the results. So please pay attention to our updates.
+1. I have been using hundreds of GPUs of Azure to re-run all the experiments in the paper. I will clarify the gpu for each algorithm and dataset. Besides I will make all the log files available in TorchSSL git repo. Please wait for my updates. I will gradually upload all log files in 2 months.
 2. If you want to join TorchSSL team, please e-mail Yidong Wang (646842131@qq.com; yidongwang37@gmail.com) for more information. We plan to add more SSL algorithms and expand TorchSSL from CV to NLP and Speech.
 # TorchSSL: A PyTorch-based Toolbox for Semi-Supervised Learning
 
