@@ -1,35 +1,35 @@
-<img src="./figures/logo.png"  width = "100" height = "100" align=center />
+# TorchSSL
 
-# News
-1. The results of BestAcc have been updated! Note that we still have some experiments running in Azure, the current results will still be upadted and we will update all results and upload logs if all things done. I use single P100 for CIFAR-10 and SVHN, single P40 for STL-10, signle V100-32G for CIFAR-100.
-2. I have been using hundreds of GPUs of Azure to re-run all the experiments in the paper. I will clarify the gpu for each algorithm and dataset. Besides I will make all the log files available in TorchSSL git repo. Please wait for my updates. I will gradually upload all log files in 2 months.
-3. If you want to join TorchSSL team, please e-mail Yidong Wang (646842131@qq.com; yidongwang37@gmail.com) for more information. We plan to add more SSL algorithms and expand TorchSSL from CV to NLP and Speech.
-# TorchSSL: A PyTorch-based Toolbox for Semi-Supervised Learning
+<img src="./figures/logo.png"  width = "100" height = "100" align='right' />
 
-An all-in-one toolkit based on PyTorch for semi-supervised learning (SSL). We implmented 9 popular SSL algorithms to enable fair comparison and boost the development of SSL algorithms.
+A Pytorch-based toolbox for semi-supervised learning. This is also the official implementation for [FlexMatch: boosting semi-supervised learning using curriculum pseudo labeling](https://proceedings.neurips.cc/paper/2021/hash/995693c15f439e3d189b06e89d145dd5-Abstract.html) published at NeurIPS 2021. [[arXiv](https://arxiv.org/abs/2110.08263)]  [[Zhihu article](https://zhuanlan.zhihu.com/p/422930830)] [[Video](http://coming)]
 
-FlexMatch: Boosting Semi-Supervised Learning with Curriculum Pseudo Labeling(https://arxiv.org/abs/2110.08263)
+## News and Updates
 
+*12/22/2021*
 
-## Supported algorithms
+- The results of BestAcc have been updated! Note that we still have some experiments running in Azure, the current results will still be upadted and we will update all results and upload logs if all things done. I use single P100 for CIFAR-10 and SVHN, single P40 for STL-10, signle V100-32G for CIFAR-100.
+- We are using hundreds of GPUs of Azure to re-run all the experiments in the paper. We will clarify the gpu for each algorithm and dataset. Besides, we will make all the log files available soon.
 
-We support fully supervised training + 9 popular SSL algorithms as listed below:
+## Introduction
 
-1. PiModel [1]
-2. MeanTeacher [2]
-3. PseudoLabel [3]
-4. VAT [4]
-5. MixMatch [5]
-6. UDA [6]
-7. ReMixMatch [7]
-8. FixMatch [8]
-9. FlexMatch [9]
+TorchSSL is an all-in-one toolkit based on PyTorch for semi-supervised learning (SSL). Currently, we implmented 9 popular SSL algorithms to enable fair comparison and boost the development of SSL algorithms.
+
+**Supported algorithms:** In addition to fully-supervised (as a baseline), TorchSSL supports the following popular algorithms:
+
+1. PiModel (NeurIPS 2015) [1]
+2. MeanTeacher (NeurIPS 2017) [2]
+3. PseudoLabel (ICML 2013) [3]
+4. VAT (Virtual adversarial training, TPAMI 2018) [4]
+5. MixMatch (NeurIPS 2019) [5]
+6. UDA (Unsupervised data augmentation, NeurIPS 2020) [6]
+7. ReMixMatch (ICLR 2019) [7]
+8. FixMatch (NeurIPS 2020) [8]
+9. FlexMatch (NeurIPS 2021) [9]
 
 Besides, we implement our Curriculum Pseudo Labeling (CPL) method for Pseudo-Label (Flex-Pseudo-Label) and UDA (Flex-UDA).
 
-## Supported datasets
-
-We support 5 popular datasets in SSL research as listed below:
+**Supported datasets:** TorchSSL currently supports 5 popular datasets in SSL research:
 
 1. CIFAR-10
 2. CIFAR-100
@@ -37,44 +37,9 @@ We support 5 popular datasets in SSL research as listed below:
 4. SVHN
 5. ImageNet
 
+## Main Results
 
-## Installation
-
-1. Prepare conda
-2. Run `conda env create -f environment.yml`
-
-
-## Usage
-
-It is convenient to perform experiment with TorchSSL. For example, if you want to perform FlexMatch algorithm:
-
-1. Modify the config file in `config/flexmatch/flexmatch.yaml` as you need
-2. Run `python flexmatch.py --c config/flexmatch/flexmatch.yaml`
-
-## ImageNet Dataset
-
-Please download the ImageNet 2014 dataset (unchanged from 2012) from the official site (link: https://image-net.org/challenges/LSVRC/2012/2012-downloads.php)
-
-Extract the train and the test set into *subfolders* (the val set is not used), and put them under `train/` and `val/` respectively. Each subfolder will represent a class.
-
-Note: the offical test set is not zipped into subfolders by classes, you may want to use: https://github.com/jiweibo/ImageNet/blob/master/valprep.sh, which is a nice script for preparing the file structure.
-
-## Customization
-
-If you want to write your own algorithm, please follow the following steps:
-
-1. Create a directory for your algorithm, e.g., `SSL`, write your own model file `SSl/SSL.py` in it. 
-2. Write the training file in `SSL.py`
-3. Write the config file in `config/SSL/SSL.yaml`
-
-## Results
-<!--
-![avatar](./figures/cf10.png)
-![avatar](./figures/cf100.png)
-![avatar](./figures/stl.png)
-![avatar](./figures/svhn.png)
--->
-The results are best accuracies with standard errors. We use random seed 0,1,2 for all experiments. All configs are included under the `config/` folder.
+The results are best accuracies with standard errors. We use random seed 0,1,2 for all experiments. All configs are included under the `config/` folder. You can directly cite these results in your own research.
 
 ### CIFAR-10 and CIFAR-100
 |                      |            |  CIFAR-10  |            |   |            | CIFAR100   |            |
@@ -110,7 +75,31 @@ The results are best accuracies with standard errors. We use random seed 0,1,2 f
 | FixMatch [8]         | 65.85±0.0  | 89.82±1.11 | 93.52±0.12 |   | 96.19±1.18 | 97.98±0.02 | 98.04±0.03 |
 | FlexMatch [9]        | 72.13±4.58 | 91.98±0.31 | 94.23±0.18 |   | 91.81±3.2  | 93.41±2.29 | 93.28±0.3  |
 
-### Citation
+
+## Usage
+
+Before running or modifing the code, you need to:
+1. Clone this repo to your machine.
+2. Make sure Anaconda or Miniconda is installed.
+3. Run `conda env create -f environment.yml` for environment initialization.
+
+### Run the experiments
+
+It is convenient to perform experiment with TorchSSL. For example, if you want to run FlexMatch algorithm:
+
+1. Modify the config file in `config/flexmatch/flexmatch.yaml` as you need
+2. Run `python flexmatch.py --c config/flexmatch/flexmatch.yaml`
+
+### Customization
+
+If you want to write your own algorithm, please follow the following steps:
+
+1. Create a directory for your algorithm, e.g., `SSL`, write your own model file `SSl/SSL.py` in it. 
+2. Write the training file in `SSL.py`
+3. Write the config file in `config/SSL/SSL.yaml`
+
+### Citing TorchSSL
+
 If you think this toolkit or the results are helpful to you and your research, please cite our paper:
 
 ```
@@ -122,7 +111,8 @@ If you think this toolkit or the results are helpful to you and your research, p
 }
 ```
 
-### Maintainer
+### Maintainers
+
 Yidong Wang<sup>1</sup>, Hao Wu<sup>2</sup>, Bowen Zhang<sup>1</sup>, Wenxin Hou<sup>1,3</sup>, Yuhao Chen<sup>4</sup> Jindong Wang<sup>3</sup>
 
 Shinozaki Lab<sup>1</sup> http://www.ts.ip.titech.ac.jp/
@@ -133,7 +123,18 @@ Microsoft Research Asia<sup>3</sup>
 
 Megvii<sup>4</sup>
 
-### References
+## Contributing
+
+1. You are welcome to open an issue on bugs, questions, and suggestions.
+2. If you want to join TorchSSL team, please e-mail Yidong Wang (646842131@qq.com; yidongwang37@gmail.com) for more information. We plan to add more SSL algorithms and expand TorchSSL from CV to NLP and Speech.
+
+## Statements
+
+*For ImageNet datasets:* Please download the ImageNet 2014 dataset (unchanged from 2012) from the official site (link: https://image-net.org/challenges/LSVRC/2012/2012-downloads.php)
+Extract the train and the test set into *subfolders* (the val set is not used), and put them under `train/` and `val/` respectively. Each subfolder will represent a class.
+Note: the offical test set is not zipped into subfolders by classes, you may want to use: https://github.com/jiweibo/ImageNet/blob/master/valprep.sh, which is a nice script for preparing the file structure.
+
+## References
 
 [1] Antti Rasmus, Harri Valpola, Mikko Honkala, Mathias Berglund, and Tapani Raiko.  Semi-supervised learning with ladder networks. InNeurIPS, pages 3546–3554, 2015.
 
