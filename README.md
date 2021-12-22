@@ -74,6 +74,8 @@ If you want to write your own algorithm, please follow the following steps:
 ![avatar](./figures/stl.png)
 ![avatar](./figures/svhn.png)
 -->
+The results are best accuracies with standard errors
+
 ### CIFAR-10 and CIFAR-100
 |                      |            |  CIFAR-10  |            |   |            | CIFAR100   |            |
 |----------------------|------------|------------|------------|---|------------|------------|------------|
