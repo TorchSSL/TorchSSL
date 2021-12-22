@@ -74,7 +74,7 @@ If you want to write your own algorithm, please follow the following steps:
 ![avatar](./figures/stl.png)
 ![avatar](./figures/svhn.png)
 -->
-The results are best accuracies with standard errors
+The results are best accuracies with standard errors. We use random seed 0,1,2 for all experiments. All configs are included under the `config/` folder.
 
 ### CIFAR-10 and CIFAR-100
 |                      |            |  CIFAR-10  |            |   |            | CIFAR100   |            |
