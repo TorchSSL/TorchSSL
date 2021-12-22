@@ -120,7 +120,7 @@ for i in range(len(show_acc)):
         worksheet.write(j+1,0,algs[j])
     for j in range(len(data_setting)):
         for alg in algs:
-            worksheet.write(algs.index(alg)+1,j+1,'running')
+            worksheet.write(algs.index(alg)+1,j+1,'None')
             
     for j in range(len(data_setting)):
         d = data_setting[j]
