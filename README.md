@@ -39,7 +39,7 @@ Besides, we implement our Curriculum Pseudo Labeling (CPL) method for Pseudo-Lab
 
 ## Main Results
 
-The results are best accuracies with standard errors. We use random seed 0,1,2 for all experiments. All configs are included under the `config/` folder. You can directly cite these results in your own research.
+The results are best accuracies with standard errors. In the results, "40", "250", "1000" etc. under the dataset row denote different numbers of labeled samples (e.g., "40" in CIFAR-10 means that there are only 4 labeled samples for each class). We use random seed 0,1,2 for all experiments. All configs are included under the `config/` folder. You can directly cite these results in your own research.
 
 ### CIFAR-10 and CIFAR-100
 |                      |            |  CIFAR-10  |            |   |            | CIFAR100   |            |
