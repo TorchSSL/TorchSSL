@@ -127,7 +127,8 @@ for i in range(len(show_acc)):
         worksheet.write(0,j+1,d)
         for alg in algs:
             for k,v in final_res.items():
-                if k.endswith(d)  and k.startswith(alg) and show_acc[i] in v:
+                if alg+'_'+d == k and show_acc[i] in v:
+                #if k.endswith('_'+d)  and k.startswith(alg+'_') and show_acc[i] in v:
                     worksheet.write(algs.index(alg)+1,j+1,str(round(np.mean(v[show_acc[i]]),2))+u"\u00B1"+str(round(np.std(v[show_acc[i]]),2)))
                 
 workbook.save('../saved_models/final_res.xls')
