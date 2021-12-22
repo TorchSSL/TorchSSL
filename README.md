@@ -98,7 +98,7 @@ If you want to write your own algorithm, please follow the following steps:
 2. Write the training file in `SSL.py`
 3. Write the config file in `config/SSL/SSL.yaml`
 
-### Citing TorchSSL
+## Citing TorchSSL
 
 If you think this toolkit or the results are helpful to you and your research, please cite our paper:
 
@@ -111,7 +111,7 @@ If you think this toolkit or the results are helpful to you and your research, p
 }
 ```
 
-### Maintainers
+## Maintainers
 
 Yidong Wang<sup>1</sup>, Hao Wu<sup>2</sup>, Bowen Zhang<sup>1</sup>, Wenxin Hou<sup>1,3</sup>, Yuhao Chen<sup>4</sup> Jindong Wang<sup>3</sup>
 
