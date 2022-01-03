@@ -107,7 +107,6 @@ def main_worker(gpu, ngpus_per_node, args):
     args.bn_momentum = 1.0 - 0.999
     if 'imagenet' in args.dataset.lower():
         _net_builder = net_builder('ResNet50', False, None, is_remix=False)
-        args.lr = 0.1
     else:
         _net_builder = net_builder(args.net,
                                    args.net_from_name,
