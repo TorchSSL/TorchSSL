@@ -181,7 +181,7 @@ def main_worker(gpu, ngpus_per_node, args):
     logger.info(f"Arguments: {args}")
 
     cudnn.benchmark = True
-    if args.rank != 0:
+    if args.rank != 0 and args.distributed:
         torch.distributed.barrier()
  
     # Construct Dataset & DataLoader
@@ -199,7 +199,7 @@ def main_worker(gpu, ngpus_per_node, args):
         lb_dset = image_loader.get_lb_train_data()
         ulb_dset = image_loader.get_ulb_train_data()
         eval_dset = image_loader.get_lb_test_data()
-    if args.rank == 0:
+    if args.rank == 0 and args.distributed:
         torch.distributed.barrier()
                             
     loader_dict = {}
