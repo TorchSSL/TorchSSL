@@ -175,7 +175,7 @@ def main_worker(gpu, ngpus_per_node, args):
 
     cudnn.benchmark = True
 
-    if args.rank != 0:
+    if args.rank != 0 and args.distributed:
         torch.distributed.barrier()
     # Construct Dataset & DataLoader
     train_dset = SSL_Dataset(args, alg='fullysupervised', name=args.dataset, train=True,
@@ -185,7 +185,7 @@ def main_worker(gpu, ngpus_per_node, args):
     _eval_dset = SSL_Dataset(args, alg='fullysupervised', name=args.dataset, train=False,
                              num_classes=args.num_classes, data_dir=args.data_dir)
     eval_dset = _eval_dset.get_dset()
-    if args.rank == 0:
+    if args.rank == 0 and args.distributed:
         torch.distributed.barrier()
     
 
