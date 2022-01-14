@@ -8,8 +8,10 @@ import numpy as np
 import json
 import os
 
-from datasets.DistributedProxySampler import DistributedProxySampler
+from datasets.sampler import DistributedSampler
+# from datasets.DistributedProxySampler import DistributedProxySampler
 
+name2sampler = {'RandomSampler': DistributedSampler}
 
 def split_ssl_data(args, data, target, num_labels, num_classes, index=None, include_lb_to_ulb=True):
     """
@@ -108,40 +110,31 @@ def get_data_loader(dset,
 
     if data_sampler is None:
         return DataLoader(dset, batch_size=batch_size, shuffle=shuffle,
-                          num_workers=num_workers, pin_memory=pin_memory)
+                          num_workers=num_workers, drop_last=drop_last, pin_memory=pin_memory)
 
-    else:
-        if isinstance(data_sampler, str):
-            data_sampler = get_sampler_by_name(data_sampler)
-
+    if isinstance(data_sampler, str):
+        data_sampler = name2sampler[data_sampler]
         if distributed:
             assert dist.is_available()
             num_replicas = dist.get_world_size()
         else:
             num_replicas = 1
 
-        if (num_epochs is not None) and (num_iters is None):
-            num_samples = len(dset) * num_epochs
-        elif (num_epochs is None) and (num_iters is not None):
-            num_samples = batch_size * num_iters * num_replicas
-        else:
-            num_samples = len(dset)
+        per_epoch_steps = num_iters // num_epochs
 
-        if data_sampler.__name__ == 'RandomSampler':
-            data_sampler = data_sampler(dset, replacement, num_samples, generator)
-        else:
-            raise RuntimeError(f"{data_sampler.__name__} is not implemented.")
+        num_samples = per_epoch_steps * batch_size * num_replicas
 
-        if distributed:
-            '''
-            Different with DistributedSampler, 
-            the DistribuedProxySampler does not shuffle the data (just wrapper for dist).
-            '''
-            data_sampler = DistributedProxySampler(data_sampler)
+        return DataLoader(dset, batch_size=batch_size, shuffle=False, num_workers=num_workers,
+                          pin_memory=pin_memory, sampler=data_sampler(dset, num_samples=num_samples),
+                          generator=generator, drop_last=drop_last)
 
-        batch_sampler = BatchSampler(data_sampler, batch_size, drop_last)
-        return DataLoader(dset, batch_sampler=batch_sampler,
-                          num_workers=num_workers, pin_memory=pin_memory)
+    elif isinstance(data_sampler, torch.utils.data.Sampler):
+        return DataLoader(dset, batch_size=batch_size, shuffle=False, num_workers=num_workers,
+                          pin_memory=pin_memory, sampler=data_sampler,
+                          generator=generator, drop_last=drop_last)
+
+    else:
+        raise Exception(f"unknown data sampler {data_sampler}.")
 
 
 def get_onehot(num_classes, idx):
