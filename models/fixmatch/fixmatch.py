@@ -13,6 +13,7 @@ import contextlib
 from train_utils import AverageMeter
 
 from .fixmatch_utils import consistency_loss, Get_Scalar
+from datasets.sampler import DistributedSampler
 from train_utils import ce_loss, wd_loss, EMA, Bn_Controller
 
 from sklearn.metrics import *
@@ -115,113 +116,120 @@ class FixMatch:
 
         classwise_acc = torch.zeros((args.num_classes,)).cuda(args.gpu)
 
-        for (_, x_lb, y_lb), (x_ulb_idx, x_ulb_w, x_ulb_s) in zip(self.loader_dict['train_lb'],
-                                                                  self.loader_dict['train_ulb']):
+        for epoch in range(args.epoch):
 
-            # prevent the training iterations exceed args.num_train_iter
-            if self.it > args.num_train_iter:
-                break
+            if isinstance(self.loader_dict['train_lb'].sampler, DistributedSampler):
+                self.loader_dict['train_lb'].sampler.set_epoch(epoch)
+            if isinstance(self.loader_dict['train_ulb'].sampler, DistributedSampler):
+                self.loader_dict['train_ulb'].sampler.set_epoch(epoch)
 
-            end_batch.record()
-            torch.cuda.synchronize()
-            start_run.record()
+            for (_, x_lb, y_lb), (x_ulb_idx, x_ulb_w, x_ulb_s) in zip(self.loader_dict['train_lb'],
+                                                                      self.loader_dict['train_ulb']):
 
-            num_lb = x_lb.shape[0]
-            num_ulb = x_ulb_w.shape[0]
-            assert num_ulb == x_ulb_s.shape[0]
+                # prevent the training iterations exceed args.num_train_iter
+                if self.it > args.num_train_iter:
+                    break
 
-            x_lb, x_ulb_w, x_ulb_s = x_lb.cuda(args.gpu), x_ulb_w.cuda(args.gpu), x_ulb_s.cuda(args.gpu)
-            y_lb = y_lb.cuda(args.gpu)
+                end_batch.record()
+                torch.cuda.synchronize()
+                start_run.record()
 
-            pseudo_counter = Counter(selected_label.tolist())
-            if max(pseudo_counter.values()) < len(self.ulb_dset):  # not all(5w) -1
-                for i in range(args.num_classes):
-                    classwise_acc[i] = pseudo_counter[i] / max(pseudo_counter.values())
+                num_lb = x_lb.shape[0]
+                num_ulb = x_ulb_w.shape[0]
+                assert num_ulb == x_ulb_s.shape[0]
 
-            inputs = torch.cat((x_lb, x_ulb_w, x_ulb_s))
+                x_lb, x_ulb_w, x_ulb_s = x_lb.cuda(args.gpu), x_ulb_w.cuda(args.gpu), x_ulb_s.cuda(args.gpu)
+                y_lb = y_lb.cuda(args.gpu)
 
-            # inference and calculate sup/unsup losses
-            with amp_cm():
-                logits = self.model(inputs)
-                logits_x_lb = logits[:num_lb]
-                logits_x_ulb_w, logits_x_ulb_s = logits[num_lb:].chunk(2)
-                sup_loss = ce_loss(logits_x_lb, y_lb, reduction='mean')
+                pseudo_counter = Counter(selected_label.tolist())
+                if max(pseudo_counter.values()) < len(self.ulb_dset):  # not all(5w) -1
+                    for i in range(args.num_classes):
+                        classwise_acc[i] = pseudo_counter[i] / max(pseudo_counter.values())
 
-                # hyper-params for update
-                T = self.t_fn(self.it)
-                p_cutoff = self.p_fn(self.it)
+                inputs = torch.cat((x_lb, x_ulb_w, x_ulb_s))
 
-                unsup_loss, mask, select, pseudo_lb = consistency_loss(logits_x_ulb_s,
-                                                                       logits_x_ulb_w,
-                                                                       'ce', T, p_cutoff,
-                                                                       use_hard_labels=args.hard_label)
+                # inference and calculate sup/unsup losses
+                with amp_cm():
+                    logits = self.model(inputs)
+                    logits_x_lb = logits[:num_lb]
+                    logits_x_ulb_w, logits_x_ulb_s = logits[num_lb:].chunk(2)
+                    sup_loss = ce_loss(logits_x_lb, y_lb, reduction='mean')
 
-                total_loss = sup_loss + self.lambda_u * unsup_loss
+                    # hyper-params for update
+                    T = self.t_fn(self.it)
+                    p_cutoff = self.p_fn(self.it)
 
-            # parameter updates
-            if args.amp:
-                scaler.scale(total_loss).backward()
-                if (args.clip > 0):
-                    torch.nn.utils.clip_grad_norm_(self.model.parameters(), args.clip)
-                scaler.step(self.optimizer)
-                scaler.update()
-            else:
-                total_loss.backward()
-                if (args.clip > 0):
-                    torch.nn.utils.clip_grad_norm_(self.model.parameters(), args.clip)
-                self.optimizer.step()
+                    unsup_loss, mask, select, pseudo_lb = consistency_loss(logits_x_ulb_s,
+                                                                           logits_x_ulb_w,
+                                                                           'ce', T, p_cutoff,
+                                                                           use_hard_labels=args.hard_label)
 
-            self.scheduler.step()
-            self.ema.update()
-            self.model.zero_grad()
+                    total_loss = sup_loss + self.lambda_u * unsup_loss
 
-            end_run.record()
-            torch.cuda.synchronize()
+                # parameter updates
+                if args.amp:
+                    scaler.scale(total_loss).backward()
+                    if (args.clip > 0):
+                        torch.nn.utils.clip_grad_norm_(self.model.parameters(), args.clip)
+                    scaler.step(self.optimizer)
+                    scaler.update()
+                else:
+                    total_loss.backward()
+                    if (args.clip > 0):
+                        torch.nn.utils.clip_grad_norm_(self.model.parameters(), args.clip)
+                    self.optimizer.step()
 
-            # tensorboard_dict update
-            tb_dict = {}
-            tb_dict['train/sup_loss'] = sup_loss.detach()
-            tb_dict['train/unsup_loss'] = unsup_loss.detach()
-            tb_dict['train/total_loss'] = total_loss.detach()
-            tb_dict['train/mask_ratio'] = 1.0 - mask.detach()
-            tb_dict['lr'] = self.optimizer.param_groups[0]['lr']
-            tb_dict['train/prefecth_time'] = start_batch.elapsed_time(end_batch) / 1000.
-            tb_dict['train/run_time'] = start_run.elapsed_time(end_run) / 1000.
+                self.scheduler.step()
+                self.ema.update()
+                self.model.zero_grad()
 
-            # Save model for each 10K steps and best model for each 1K steps
-            if self.it % 10000 == 0:
-                save_path = os.path.join(args.save_dir, args.save_name)
-                if not args.multiprocessing_distributed or \
-                        (args.multiprocessing_distributed and args.rank % ngpus_per_node == 0):
-                    self.save_model('latest_model.pth', save_path)
+                end_run.record()
+                torch.cuda.synchronize()
 
-            if self.it % self.num_eval_iter == 0:
-                eval_dict = self.evaluate(args=args)
-                tb_dict.update(eval_dict)
+                # tensorboard_dict update
+                tb_dict = {}
+                tb_dict['train/sup_loss'] = sup_loss.detach()
+                tb_dict['train/unsup_loss'] = unsup_loss.detach()
+                tb_dict['train/total_loss'] = total_loss.detach()
+                tb_dict['train/mask_ratio'] = 1.0 - mask.detach()
+                tb_dict['lr'] = self.optimizer.param_groups[0]['lr']
+                tb_dict['train/prefecth_time'] = start_batch.elapsed_time(end_batch) / 1000.
+                tb_dict['train/run_time'] = start_run.elapsed_time(end_run) / 1000.
 
-                save_path = os.path.join(args.save_dir, args.save_name)
+                # Save model for each 10K steps and best model for each 1K steps
+                if self.it % 10000 == 0:
+                    save_path = os.path.join(args.save_dir, args.save_name)
+                    if not args.multiprocessing_distributed or \
+                            (args.multiprocessing_distributed and args.rank % ngpus_per_node == 0):
+                        self.save_model('latest_model.pth', save_path)
 
-                if tb_dict['eval/top-1-acc'] > best_eval_acc:
-                    best_eval_acc = tb_dict['eval/top-1-acc']
-                    best_it = self.it
+                if self.it % self.num_eval_iter == 0:
+                    eval_dict = self.evaluate(args=args)
+                    tb_dict.update(eval_dict)
 
-                self.print_fn(
-                    f"{self.it} iteration, USE_EMA: {self.ema_m != 0}, {tb_dict}, BEST_EVAL_ACC: {best_eval_acc}, at {best_it} iters")
+                    save_path = os.path.join(args.save_dir, args.save_name)
 
-                if not args.multiprocessing_distributed or \
-                        (args.multiprocessing_distributed and args.rank % ngpus_per_node == 0):
+                    if tb_dict['eval/top-1-acc'] > best_eval_acc:
+                        best_eval_acc = tb_dict['eval/top-1-acc']
+                        best_it = self.it
 
-                    if self.it == best_it:
-                        self.save_model('model_best.pth', save_path)
+                    self.print_fn(
+                        f"{self.it} iteration, USE_EMA: {self.ema_m != 0}, {tb_dict}, BEST_EVAL_ACC: {best_eval_acc}, at {best_it} iters")
 
-                    if not self.tb_log is None:
-                        self.tb_log.update(tb_dict, self.it)
+                    if not args.multiprocessing_distributed or \
+                            (args.multiprocessing_distributed and args.rank % ngpus_per_node == 0):
 
-            self.it += 1
-            del tb_dict
-            start_batch.record()
-            if self.it > 0.8 * args.num_train_iter:
-                self.num_eval_iter = 1000
+                        if self.it == best_it:
+                            self.save_model('model_best.pth', save_path)
+
+                        if not self.tb_log is None:
+                            self.tb_log.update(tb_dict, self.it)
+
+                self.it += 1
+                del tb_dict
+                start_batch.record()
+                if self.it > 0.8 * args.num_train_iter:
+                    self.num_eval_iter = 1000
 
         eval_dict = self.evaluate(args=args)
         eval_dict.update({'eval/best_acc': best_eval_acc, 'eval/best_it': best_it})
