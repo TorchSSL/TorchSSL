@@ -4,7 +4,7 @@ resume: False
 load_path: None
 overwrite: True
 use_tensorboard: True
-epoch: 1024
+epoch: 1
 num_train_iter: 2000000
 num_eval_iter: 10000
 num_labels: 100000

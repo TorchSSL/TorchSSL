@@ -25,9 +25,6 @@ def main(args):
     main(args) spawn each process (main_worker) to each GPU.
     '''
 
-    assert args.num_train_iter % args.epoch == 0, \
-        f"# total training iter. {args.num_train_iter} is not divisible by # epochs {args.epoch}"
-
     save_path = os.path.join(args.save_dir, args.save_name)
     if os.path.exists(save_path) and args.overwrite and args.resume == False:
         import shutil
@@ -206,7 +203,6 @@ def main_worker(gpu, ngpus_per_node, args):
                                               args.batch_size,
                                               data_sampler=args.train_sampler,
                                               num_iters=args.num_train_iter,
-                                              num_epochs=args.epoch,
                                               num_workers=args.num_workers,
                                               distributed=args.distributed)
 
@@ -214,7 +210,6 @@ def main_worker(gpu, ngpus_per_node, args):
                                                args.batch_size * args.uratio,
                                                data_sampler=args.train_sampler,
                                                num_iters=args.num_train_iter,
-                                               num_epochs=args.epoch,
                                                num_workers=4 * args.num_workers,
                                                distributed=args.distributed)
 
@@ -232,7 +227,8 @@ def main_worker(gpu, ngpus_per_node, args):
 
     # START TRAINING of RemixMatch
     trainer = model.train
-    trainer(args, logger=logger)
+    for epoch in range(args.epoch):
+        trainer(args, logger=logger)
 
     if not args.multiprocessing_distributed or \
             (args.multiprocessing_distributed and args.rank % ngpus_per_node == 0):
@@ -270,7 +266,7 @@ if __name__ == "__main__":
     '''
     Training Configuration of RemixMatch
     '''
-    parser.add_argument('--epoch', type=int, default=1024)
+    parser.add_argument('--epoch', type=int, default=1)
     parser.add_argument('--num_train_iter', type=int, default=2 ** 20,
                         help='total number of training iterations')
     parser.add_argument('--num_eval_iter', type=int, default=1000,

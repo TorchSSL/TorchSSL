@@ -15,7 +15,7 @@ from .augmentation.randaugment import RandAugment
 from torch.utils.data import sampler, DataLoader
 from torch.utils.data.sampler import BatchSampler
 import torch.distributed as dist
-# from datasets.DistributedProxySampler import DistributedProxySampler
+from datasets.DistributedProxySampler import DistributedProxySampler
 
 import gc
 import sys
@@ -180,7 +180,7 @@ class ImageNetLoader:
 def get_transform(mean, std, crop_size, train=True):
     if train:
         return transforms.Compose([transforms.RandomHorizontalFlip(),
-                                   transforms.RandomCrop(crop_size, padding=int(crop_size * 0.125), padding_mode='reflect'),
+                                   transforms.RandomCrop(crop_size, padding=4, padding_mode='reflect'),
                                    transforms.ToTensor(),
                                    transforms.Normalize(mean, std)])
     else:
@@ -194,11 +194,6 @@ class SSL_Dataset:
     separates labeled and unlabeled data,
     and return BasicDataset: torch.utils.data.Dataset (see datasets.dataset.py)
     """
-    dataset2crop_size = {'STL10': 96,
-                         'SVHN': 32,
-                         'CIFAR10': 32,
-                         'CIFAR100': 32,
-                         'IMAGENET': 224}
 
     def __init__(self,
                  args,
@@ -221,8 +216,7 @@ class SSL_Dataset:
         self.train = train
         self.num_classes = num_classes
         self.data_dir = data_dir
-        crop_size = self.dataset2crop_size[self.name.upper()]
-        # crop_size = 96 if self.name.upper() == 'STL10' else 224 if self.name.upper() == 'IMAGENET' else 32
+        crop_size = 96 if self.name.upper() == 'STL10' else 224 if self.name.upper() == 'IMAGENET' else 32
         self.transform = get_transform(mean[name], std[name], crop_size, train)
 
     def get_data(self, svhn_extra=True):

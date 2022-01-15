@@ -10,7 +10,6 @@ import contextlib
 from train_utils import AverageMeter
 
 from .mixmatch_utils import consistency_loss, Get_Scalar, one_hot, mixup_one_target
-from datasets.sampler import DistributedSampler
 from train_utils import ce_loss, wd_loss, EMA, Bn_Controller
 
 from sklearn.metrics import *
@@ -99,147 +98,140 @@ class MixMatch:
             eval_dict = self.evaluate(args=args)
             print(eval_dict)
 
-        for epoch in range(args.epoch):
+        for (_, x_lb, y_lb), (_, x_ulb_w1, x_ulb_w2) in zip(self.loader_dict['train_lb'],
+                                                            self.loader_dict['train_ulb']):
 
-            if isinstance(self.loader_dict['train_lb'].sampler, DistributedSampler):
-                self.loader_dict['train_lb'].sampler.set_epoch(epoch)
-            if isinstance(self.loader_dict['train_ulb'].sampler, DistributedSampler):
-                self.loader_dict['train_ulb'].sampler.set_epoch(epoch)
+            # prevent the training iterations exceed args.num_train_iter
+            if self.it > args.num_train_iter:
+                break
 
-            for (_, x_lb, y_lb), (_, x_ulb_w1, x_ulb_w2) in zip(self.loader_dict['train_lb'],
-                                                                self.loader_dict['train_ulb']):
+            end_batch.record()
+            torch.cuda.synchronize()
+            start_run.record()
 
-                # prevent the training iterations exceed args.num_train_iter
-                if self.it > args.num_train_iter:
-                    break
+            num_lb = x_lb.shape[0]
+            num_ulb = x_ulb_w1.shape[0]
+            assert num_ulb == x_ulb_w2.shape[0]
 
-                end_batch.record()
-                torch.cuda.synchronize()
-                start_run.record()
+            x_lb, x_ulb_w1, x_ulb_w2 = x_lb.cuda(args.gpu), x_ulb_w1.cuda(args.gpu), x_ulb_w2.cuda(args.gpu)
+            y_lb = y_lb.cuda(args.gpu)
 
-                num_lb = x_lb.shape[0]
-                num_ulb = x_ulb_w1.shape[0]
-                assert num_ulb == x_ulb_w2.shape[0]
-
-                x_lb, x_ulb_w1, x_ulb_w2 = x_lb.cuda(args.gpu), x_ulb_w1.cuda(args.gpu), x_ulb_w2.cuda(args.gpu)
-                y_lb = y_lb.cuda(args.gpu)
-
-                # inference and calculate sup/unsup losses
-                with amp_cm():
-                    with torch.no_grad():
-                        self.bn_controller.freeze_bn(self.model)
-                        logits_x_ulb_w1 = self.model(x_ulb_w1)
-                        logits_x_ulb_w2 = self.model(x_ulb_w2)
-                        self.bn_controller.unfreeze_bn(self.model)
-                        # Temperature sharpening
-                        T = self.t_fn(self.it)
-                        # avg
-                        avg_prob_x_ulb = (torch.softmax(logits_x_ulb_w1, dim=1) + torch.softmax(logits_x_ulb_w2, dim=1)) / 2
-                        avg_prob_x_ulb = (avg_prob_x_ulb / avg_prob_x_ulb.sum(dim=-1, keepdim=True))
-                        # sharpening
-                        sharpen_prob_x_ulb = avg_prob_x_ulb ** (1 / T)
-                        sharpen_prob_x_ulb = (sharpen_prob_x_ulb / sharpen_prob_x_ulb.sum(dim=-1, keepdim=True)).detach()
-
-                        # Pseudo Label
-                        input_labels = torch.cat(
-                            [one_hot(y_lb, args.num_classes, args.gpu), sharpen_prob_x_ulb, sharpen_prob_x_ulb], dim=0)
-
-                        # Mix up
-                        inputs = torch.cat([x_lb, x_ulb_w1, x_ulb_w2])
-                        mixed_x, mixed_y, _ = mixup_one_target(inputs, input_labels,
-                                                               args.gpu,
-                                                               args.alpha,
-                                                               is_bias=True)
-
-                        # Interleave labeled and unlabeled samples between batches to get correct batch norm calculation
-                        mixed_x = list(torch.split(mixed_x, num_lb))
-                        mixed_x = self.interleave(mixed_x, num_lb)
-
-                    logits = [self.model(mixed_x[0])]
-                    # calculate BN for only the first batch
+            # inference and calculate sup/unsup losses
+            with amp_cm():
+                with torch.no_grad():
                     self.bn_controller.freeze_bn(self.model)
-                    for ipt in mixed_x[1:]:
-                        logits.append(self.model(ipt))
-
-                    # put interleaved samples back
-                    logits = self.interleave(logits, num_lb)
-                    logits_x = logits[0]
-                    logits_u = torch.cat(logits[1:], dim=0)
+                    logits_x_ulb_w1 = self.model(x_ulb_w1)
+                    logits_x_ulb_w2 = self.model(x_ulb_w2)
                     self.bn_controller.unfreeze_bn(self.model)
+                    # Temperature sharpening
+                    T = self.t_fn(self.it)
+                    # avg
+                    avg_prob_x_ulb = (torch.softmax(logits_x_ulb_w1, dim=1) + torch.softmax(logits_x_ulb_w2, dim=1)) / 2
+                    avg_prob_x_ulb = (avg_prob_x_ulb / avg_prob_x_ulb.sum(dim=-1, keepdim=True))
+                    # sharpening
+                    sharpen_prob_x_ulb = avg_prob_x_ulb ** (1 / T)
+                    sharpen_prob_x_ulb = (sharpen_prob_x_ulb / sharpen_prob_x_ulb.sum(dim=-1, keepdim=True)).detach()
 
-                    sup_loss = ce_loss(logits_x, mixed_y[:num_lb], use_hard_labels=False)
-                    sup_loss = sup_loss.mean()
-                    unsup_loss = consistency_loss(logits_u, mixed_y[num_lb:])
+                    # Pseudo Label
+                    input_labels = torch.cat(
+                        [one_hot(y_lb, args.num_classes, args.gpu), sharpen_prob_x_ulb, sharpen_prob_x_ulb], dim=0)
 
-                    # set ramp_up for lambda_u
-                    rampup = float(np.clip(self.it / (args.ramp_up * args.num_train_iter), 0.0, 1.0))
-                    lambda_u = self.lambda_u * rampup
+                    # Mix up
+                    inputs = torch.cat([x_lb, x_ulb_w1, x_ulb_w2])
+                    mixed_x, mixed_y, _ = mixup_one_target(inputs, input_labels,
+                                                           args.gpu,
+                                                           args.alpha,
+                                                           is_bias=True)
 
-                    total_loss = sup_loss + lambda_u * unsup_loss
+                    # Interleave labeled and unlabeled samples between batches to get correct batch norm calculation
+                    mixed_x = list(torch.split(mixed_x, num_lb))
+                    mixed_x = self.interleave(mixed_x, num_lb)
 
-                # parameter updates
-                if args.amp:
-                    scaler.scale(total_loss).backward()
-                    if (args.clip > 0):
-                        torch.nn.utils.clip_grad_norm_(self.model.parameters(), args.clip)
-                    scaler.step(self.optimizer)
-                    scaler.update()
-                else:
-                    total_loss.backward()
-                    if (args.clip > 0):
-                        torch.nn.utils.clip_grad_norm_(self.model.parameters(), args.clip)
-                    self.optimizer.step()
+                logits = [self.model(mixed_x[0])]
+                # calculate BN for only the first batch
+                self.bn_controller.freeze_bn(self.model)
+                for ipt in mixed_x[1:]:
+                    logits.append(self.model(ipt))
 
-                self.scheduler.step()
-                self.ema.update()
-                self.model.zero_grad()
+                # put interleaved samples back
+                logits = self.interleave(logits, num_lb)
+                logits_x = logits[0]
+                logits_u = torch.cat(logits[1:], dim=0)
+                self.bn_controller.unfreeze_bn(self.model)
 
-                end_run.record()
-                torch.cuda.synchronize()
+                sup_loss = ce_loss(logits_x, mixed_y[:num_lb], use_hard_labels=False)
+                sup_loss = sup_loss.mean()
+                unsup_loss = consistency_loss(logits_u, mixed_y[num_lb:])
 
-                # tensorboard_dict update
-                tb_dict = {}
-                tb_dict['train/sup_loss'] = sup_loss.detach()
-                tb_dict['train/unsup_loss'] = unsup_loss.detach()
-                tb_dict['train/total_loss'] = total_loss.detach()
-                tb_dict['lr'] = self.optimizer.param_groups[0]['lr']
-                tb_dict['train/prefecth_time'] = start_batch.elapsed_time(end_batch) / 1000.
-                tb_dict['train/run_time'] = start_run.elapsed_time(end_run) / 1000.
+                # set ramp_up for lambda_u
+                rampup = float(np.clip(self.it / (args.ramp_up * args.num_train_iter), 0.0, 1.0))
+                lambda_u = self.lambda_u * rampup
 
-                # Save model for each 10K steps and best model for each 1K steps
-                if self.it % 10000 == 0:
-                    save_path = os.path.join(args.save_dir, args.save_name)
-                    if not args.multiprocessing_distributed or \
-                            (args.multiprocessing_distributed and args.rank % ngpus_per_node == 0):
-                        self.save_model('latest_model.pth', save_path)
+                total_loss = sup_loss + lambda_u * unsup_loss
 
-                if self.it % self.num_eval_iter == 0:
-                    eval_dict = self.evaluate(args=args)
-                    tb_dict.update(eval_dict)
+            # parameter updates
+            if args.amp:
+                scaler.scale(total_loss).backward()
+                if (args.clip > 0):
+                    torch.nn.utils.clip_grad_norm_(self.model.parameters(), args.clip)
+                scaler.step(self.optimizer)
+                scaler.update()
+            else:
+                total_loss.backward()
+                if (args.clip > 0):
+                    torch.nn.utils.clip_grad_norm_(self.model.parameters(), args.clip)
+                self.optimizer.step()
 
-                    save_path = os.path.join(args.save_dir, args.save_name)
+            self.scheduler.step()
+            self.ema.update()
+            self.model.zero_grad()
 
-                    if tb_dict['eval/top-1-acc'] > best_eval_acc:
-                        best_eval_acc = tb_dict['eval/top-1-acc']
-                        best_it = self.it
+            end_run.record()
+            torch.cuda.synchronize()
 
-                    self.print_fn(
-                        f"{self.it} iteration, USE_EMA: {self.ema_m != 0}, {tb_dict}, BEST_EVAL_ACC: {best_eval_acc}, at {best_it} iters")
+            # tensorboard_dict update
+            tb_dict = {}
+            tb_dict['train/sup_loss'] = sup_loss.detach()
+            tb_dict['train/unsup_loss'] = unsup_loss.detach()
+            tb_dict['train/total_loss'] = total_loss.detach()
+            tb_dict['lr'] = self.optimizer.param_groups[0]['lr']
+            tb_dict['train/prefecth_time'] = start_batch.elapsed_time(end_batch) / 1000.
+            tb_dict['train/run_time'] = start_run.elapsed_time(end_run) / 1000.
 
-                    if not args.multiprocessing_distributed or \
-                            (args.multiprocessing_distributed and args.rank % ngpus_per_node == 0):
+            # Save model for each 10K steps and best model for each 1K steps
+            if self.it % 10000 == 0:
+                save_path = os.path.join(args.save_dir, args.save_name)
+                if not args.multiprocessing_distributed or \
+                        (args.multiprocessing_distributed and args.rank % ngpus_per_node == 0):
+                    self.save_model('latest_model.pth', save_path)
 
-                        if self.it == best_it:
-                            self.save_model('model_best.pth', save_path)
+            if self.it % self.num_eval_iter == 0:
+                eval_dict = self.evaluate(args=args)
+                tb_dict.update(eval_dict)
 
-                        if not self.tb_log is None:
-                            self.tb_log.update(tb_dict, self.it)
+                save_path = os.path.join(args.save_dir, args.save_name)
 
-                self.it += 1
-                del tb_dict
-                start_batch.record()
-                if self.it > 0.8 * args.num_train_iter:
-                    self.num_eval_iter = 1000
+                if tb_dict['eval/top-1-acc'] > best_eval_acc:
+                    best_eval_acc = tb_dict['eval/top-1-acc']
+                    best_it = self.it
+
+                self.print_fn(
+                    f"{self.it} iteration, USE_EMA: {self.ema_m != 0}, {tb_dict}, BEST_EVAL_ACC: {best_eval_acc}, at {best_it} iters")
+
+                if not args.multiprocessing_distributed or \
+                        (args.multiprocessing_distributed and args.rank % ngpus_per_node == 0):
+
+                    if self.it == best_it:
+                        self.save_model('model_best.pth', save_path)
+
+                    if not self.tb_log is None:
+                        self.tb_log.update(tb_dict, self.it)
+
+            self.it += 1
+            del tb_dict
+            start_batch.record()
+            if self.it > 0.8 * args.num_train_iter:
+                self.num_eval_iter = 1000
 
         eval_dict = self.evaluate(args=args)
         eval_dict.update({'eval/best_acc': best_eval_acc, 'eval/best_it': best_it})
