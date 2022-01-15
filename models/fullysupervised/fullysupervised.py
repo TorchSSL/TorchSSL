@@ -6,6 +6,7 @@ from torch.cuda.amp import autocast, GradScaler
 import os
 import contextlib
 
+from datasets.sampler import DistributedSampler
 from train_utils import ce_loss, wd_loss, EMA, Bn_Controller
 
 from sklearn.metrics import *
@@ -19,7 +20,7 @@ class FullySupervised:
         class FullySupervised contains setter of data_loader, optimizer, and model update methods.
         Args:
             net_builder: backbone network class (see net_builder in utils.py)
-            num_classes: # of label classes 
+            num_classes: # of label classes
             it: initial iteration count
             num_eval_iter: frequency of evaluation.
             tb_log: tensorboard writer (see train_utils.py)
@@ -88,92 +89,98 @@ class FullySupervised:
         if args.resume == True:
             eval_dict = self.evaluate(args=args)
             print(eval_dict)
+        for epoch in range(args.epoch):
 
-        for _, x_lb, y_lb in self.loader_dict['train_lb']:
+            if isinstance(self.loader_dict['train_lb'].sampler, DistributedSampler):
+                self.loader_dict['train_lb'].sampler.set_epoch(epoch)
+            if isinstance(self.loader_dict['train_ulb'].sampler, DistributedSampler):
+                self.loader_dict['train_ulb'].sampler.set_epoch(epoch)
 
-            # prevent the training iterations exceed args.num_train_iter
-            if self.it > args.num_train_iter:
-                break
-            end_batch.record()
-            torch.cuda.synchronize()
-            start_run.record()
+            for _, x_lb, y_lb in self.loader_dict['train_lb']:
 
-            x_lb = x_lb.cuda(args.gpu)
-            y_lb = y_lb.cuda(args.gpu)
+                # prevent the training iterations exceed args.num_train_iter
+                if self.it > args.num_train_iter:
+                    break
+                end_batch.record()
+                torch.cuda.synchronize()
+                start_run.record()
 
-            num_lb = x_lb.shape[0]
+                x_lb = x_lb.cuda(args.gpu)
+                y_lb = y_lb.cuda(args.gpu)
 
-            # inference and calculate sup/unsup losses
-            with amp_cm():
+                num_lb = x_lb.shape[0]
 
-                logits_x_lb = self.model(x_lb)
+                # inference and calculate sup/unsup losses
+                with amp_cm():
 
-                sup_loss = ce_loss(logits_x_lb, y_lb, reduction='mean')
+                    logits_x_lb = self.model(x_lb)
 
-                total_loss = sup_loss
+                    sup_loss = ce_loss(logits_x_lb, y_lb, reduction='mean')
 
-            # parameter updates
-            if args.amp:
-                scaler.scale(total_loss).backward()
-                if (args.clip > 0):
-                    torch.nn.utils.clip_grad_norm_(self.model.parameters(), args.clip)
-                scaler.step(self.optimizer)
-                scaler.update()
-            else:
-                total_loss.backward()
-                if (args.clip > 0):
-                    torch.nn.utils.clip_grad_norm_(self.model.parameters(), args.clip)
-                self.optimizer.step()
+                    total_loss = sup_loss
 
-            self.scheduler.step()
-            self.ema.update()
-            self.model.zero_grad()
+                # parameter updates
+                if args.amp:
+                    scaler.scale(total_loss).backward()
+                    if (args.clip > 0):
+                        torch.nn.utils.clip_grad_norm_(self.model.parameters(), args.clip)
+                    scaler.step(self.optimizer)
+                    scaler.update()
+                else:
+                    total_loss.backward()
+                    if (args.clip > 0):
+                        torch.nn.utils.clip_grad_norm_(self.model.parameters(), args.clip)
+                    self.optimizer.step()
 
-            end_run.record()
-            torch.cuda.synchronize()
+                self.scheduler.step()
+                self.ema.update()
+                self.model.zero_grad()
 
-            # tensorboard_dict update
-            tb_dict = {}
-            tb_dict['train/sup_loss'] = sup_loss.detach()
-            tb_dict['train/total_loss'] = total_loss.detach()
-            tb_dict['lr'] = self.optimizer.param_groups[0]['lr']
-            tb_dict['train/prefecth_time'] = start_batch.elapsed_time(end_batch) / 1000.
-            tb_dict['train/run_time'] = start_run.elapsed_time(end_run) / 1000.
+                end_run.record()
+                torch.cuda.synchronize()
 
-            # Save model for each 10K steps and best model for each 1K steps
-            if self.it % 10000 == 0:
-                save_path = os.path.join(args.save_dir, args.save_name)
-                if not args.multiprocessing_distributed or \
-                        (args.multiprocessing_distributed and args.rank % ngpus_per_node == 0):
-                    self.save_model('latest_model.pth', save_path)
+                # tensorboard_dict update
+                tb_dict = {}
+                tb_dict['train/sup_loss'] = sup_loss.detach()
+                tb_dict['train/total_loss'] = total_loss.detach()
+                tb_dict['lr'] = self.optimizer.param_groups[0]['lr']
+                tb_dict['train/prefecth_time'] = start_batch.elapsed_time(end_batch) / 1000.
+                tb_dict['train/run_time'] = start_run.elapsed_time(end_run) / 1000.
 
-            if self.it % self.num_eval_iter == 0:
-                eval_dict = self.evaluate(args=args)
-                tb_dict.update(eval_dict)
+                # Save model for each 10K steps and best model for each 1K steps
+                if self.it % 10000 == 0:
+                    save_path = os.path.join(args.save_dir, args.save_name)
+                    if not args.multiprocessing_distributed or \
+                            (args.multiprocessing_distributed and args.rank % ngpus_per_node == 0):
+                        self.save_model('latest_model.pth', save_path)
 
-                save_path = os.path.join(args.save_dir, args.save_name)
+                if self.it % self.num_eval_iter == 0:
+                    eval_dict = self.evaluate(args=args)
+                    tb_dict.update(eval_dict)
 
-                if tb_dict['eval/top-1-acc'] > best_eval_acc:
-                    best_eval_acc = tb_dict['eval/top-1-acc']
-                    best_it = self.it
+                    save_path = os.path.join(args.save_dir, args.save_name)
 
-                self.print_fn(
-                    f"{self.it} iteration, {tb_dict}, BEST_EVAL_ACC: {best_eval_acc}, at {best_it} iters")
+                    if tb_dict['eval/top-1-acc'] > best_eval_acc:
+                        best_eval_acc = tb_dict['eval/top-1-acc']
+                        best_it = self.it
 
-                if not args.multiprocessing_distributed or \
-                        (args.multiprocessing_distributed and args.rank % ngpus_per_node == 0):
+                    self.print_fn(
+                        f"{self.it} iteration, {tb_dict}, BEST_EVAL_ACC: {best_eval_acc}, at {best_it} iters")
 
-                    if self.it == best_it:
-                        self.save_model('model_best.pth', save_path)
+                    if not args.multiprocessing_distributed or \
+                            (args.multiprocessing_distributed and args.rank % ngpus_per_node == 0):
 
-                    if not self.tb_log is None:
-                        self.tb_log.update(tb_dict, self.it)
+                        if self.it == best_it:
+                            self.save_model('model_best.pth', save_path)
 
-            self.it += 1
-            del tb_dict
-            start_batch.record()
-            if self.it > 0.8 * args.num_train_iter:
-                self.num_eval_iter = 1000
+                        if not self.tb_log is None:
+                            self.tb_log.update(tb_dict, self.it)
+
+                self.it += 1
+                del tb_dict
+                start_batch.record()
+                if self.it > 0.8 * args.num_train_iter:
+                    self.num_eval_iter = 1000
 
         eval_dict = self.evaluate(args=args)
         eval_dict.update({'eval/best_acc': best_eval_acc, 'eval/best_it': best_it})
