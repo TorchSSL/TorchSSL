@@ -114,18 +114,21 @@ def get_data_loader(dset,
 
     if isinstance(data_sampler, str):
         data_sampler = name2sampler[data_sampler]
+
         if distributed:
             assert dist.is_available()
             num_replicas = dist.get_world_size()
+            rank = dist.get_rank()
         else:
             num_replicas = 1
+            rank = 0
 
         per_epoch_steps = num_iters // num_epochs
 
         num_samples = per_epoch_steps * batch_size * num_replicas
 
         return DataLoader(dset, batch_size=batch_size, shuffle=False, num_workers=num_workers,
-                          pin_memory=pin_memory, sampler=data_sampler(dset, num_samples=num_samples),
+                          pin_memory=pin_memory, sampler=data_sampler(dset, num_replicas=num_replicas, rank=rank, num_samples=num_samples),
                           generator=generator, drop_last=drop_last)
 
     elif isinstance(data_sampler, torch.utils.data.Sampler):
