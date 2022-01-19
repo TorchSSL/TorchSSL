@@ -135,8 +135,8 @@ Max-Planck-Institut für Informatik<sup>6</sup>
 ## Statements
 
 *For ImageNet datasets:* Please download the ImageNet 2014 dataset (unchanged from 2012) from the official site (link: https://image-net.org/challenges/LSVRC/2012/2012-downloads.php)
-Extract the train and the test set into *subfolders* (the val set is not used), and put them under `train/` and `val/` respectively. Each subfolder will represent a class.
-Note: the offical test set is not zipped into subfolders by classes, you may want to use: https://github.com/jiweibo/ImageNet/blob/master/valprep.sh, which is a nice script for preparing the file structure.
+Extract the train and the val set into *subfolders* (the test set is not used), and put them under `train/` and `val/` respectively. Each subfolder will represent a class.
+Note: the offical val set is not zipped into subfolders by classes, you may want to use: https://github.com/jiweibo/ImageNet/blob/master/valprep.sh, which is a nice script for preparing the file structure.
 
 ## References
 
