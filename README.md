@@ -6,10 +6,10 @@ A Pytorch-based toolbox for semi-supervised learning. This is also the official 
 
 ## News and Updates
 
-*12/22/2021*
+*15/02/2021*
 
-- The results of BestAcc have been updated! Note that we still have some experiments running in Azure, the current results will still be upadted and we will update all results and upload logs if all things done. I use single P100 for CIFAR-10 and SVHN, single P40 for STL-10, signle V100-32G for CIFAR-100.
-- We are using hundreds of GPUs of Azure to re-run all the experiments in the paper. We will clarify the gpu for each algorithm and dataset. Besides, we will make all the log files available soon.
+- The logs and model weights are shared! We notice that some model weights are missing. We will try to upload the missing model weights in the future.
+- The results of BestAcc have been updated! I use single P100 for CIFAR-10 and SVHN, single P40 for STL-10, signle V100-32G for CIFAR-100.
 
 ## Introduction
 
@@ -75,6 +75,10 @@ The results are best accuracies with standard errors. In the results, "40", "250
 | FixMatch [8]         | 64.03±4.14 | 90.19±1.04 | 93.75±0.33 |   | 96.19±1.18 | 97.98±0.02 | 98.04±0.03 |
 | FlexMatch [9]        | 70.85±4.16 | 91.77±0.39 | 94.23±0.18 |   | 91.81±3.2  | 93.41±2.29 | 93.28±0.3  |
 
+## Logs and weights
+
+You can download the shared logs and weights here.
+https://1drv.ms/u/s!AlpW9hcyb0KvmyCfsCjGvhDXG5Nb?e=Xc6amH
 
 ## Usage
 
