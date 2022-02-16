@@ -126,19 +126,17 @@ If you think this toolkit or the results are helpful to you and your research, p
 
 ## Maintainers
 
-Yidong Wang<sup>1</sup>, Hao Chen<sup>5</sup>, Yue Fan<sup>6</sup>, Hao Wu<sup>2</sup>, Bowen Zhang<sup>1</sup>, Wenxin Hou<sup>1,3</sup>, Yuhao Chen<sup>4</sup>, Jindong Wang<sup>3</sup>
+Yidong Wang<sup>1</sup>, Hao Chen<sup>2</sup>, Yue Fan<sup>3</sup>, Hao Wu<sup>1</sup>, Bowen Zhang<sup>1</sup>, Wenxin Hou<sup>1,4</sup>, Yuhao Chen<sup>5</sup>, Jindong Wang<sup>4</sup>
 
-Shinozaki Lab<sup>1</sup> http://www.ts.ip.titech.ac.jp/
+Tokyo Institute of Technology<sup>1</sup>
 
-Okumura Lab<sup>2</sup> http://lr-www.pi.titech.ac.jp/wp/
+Carnegie Mellon Univerisity<sup>2</sup>
 
-Microsoft Research Asia<sup>3</sup>
+Max-Planck-Institut für Informatik<sup>3</sup>
 
-Megvii<sup>4</sup>
+Microsoft Research Asia<sup>4</sup>
 
-Carnegie Mellon Univerisity<sup>5</sup>
-
-Max-Planck-Institut für Informatik<sup>6</sup>
+Megvii<sup>5</sup>
 
 ## Contributing
 
