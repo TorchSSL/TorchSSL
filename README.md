@@ -75,6 +75,14 @@ The results are best accuracies with standard errors. In the results, "40", "250
 | FixMatch [8]         | 64.03±4.14 | 90.19±1.04 | 93.75±0.33 |   | 96.19±1.18 | 97.98±0.02 | 98.04±0.03 |
 | FlexMatch [9]        | 70.85±4.16 | 91.77±0.39 | 94.23±0.18 |   | 91.81±3.2  | 93.41±2.29 | 93.28±0.3  |
 
+### ImageNet
+
+|                      |100k labels |            |
+|----------------------|------------|------------|
+|                      | top-1      | top-5      |
+| FixMatch [8]         | 56.34      | 78.20      |
+| FlexMatch [9]        | 58.15      | 80.52      |
+
 ## Logs and weights
 
 You can download the shared logs and weights here.
