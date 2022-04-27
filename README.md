@@ -132,7 +132,7 @@ Yidong Wang<sup>1</sup>, Hao Chen<sup>2</sup>, Yue Fan<sup>3</sup>, Hao Wu<sup>1
 
 Tokyo Institute of Technology<sup>1</sup>
 
-Carnegie Mellon Univerisity<sup>2</sup>
+Carnegie Mellon University<sup>2</sup>
 
 Max-Planck-Institut für Informatik<sup>3</sup>
 
