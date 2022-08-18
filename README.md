@@ -6,6 +6,9 @@ A Pytorch-based toolbox for semi-supervised learning. This is also the official 
 
 ## News and Updates
 
+*17/08/2022*
+ - TorchSSL (this repo) is no longer maintained and updated. **We have created/updated a more comprehensive codebase and benchmark for Semi-Supervised Learning - [USB](https://github.com/microsoft/Semi-supervised-learning)**. It is built upon TorchSSL but more flexible to use and more extensiable, containing datasets spanning Computer Vision, Natural Language Processing, and Audio Processing. 
+
 *15/02/2021*
 
 - The logs and model weights are shared! We notice that some model weights are missing. We will try to upload the missing model weights in the future.
