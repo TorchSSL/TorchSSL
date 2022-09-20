@@ -222,7 +222,7 @@ class FullySupervised:
         torch.save({'model': self.model.state_dict(),
                     'optimizer': self.optimizer.state_dict(),
                     'scheduler': self.scheduler.state_dict(),
-                    'it': self.it,
+                    'it': self.it + 1,
                     'ema_model': ema_model.state_dict()},
                    save_filename)
 
