@@ -6,10 +6,13 @@ A Pytorch-based toolbox for semi-supervised learning. This is also the official 
 
 ## News and Updates
 
-*12/22/2021*
+*17/08/2022*
+ - TorchSSL (this repo) is no longer maintained and updated. **We have created/updated a more comprehensive codebase and benchmark for Semi-Supervised Learning - [USB](https://github.com/microsoft/Semi-supervised-learning)**. It is built upon TorchSSL but more flexible to use and more extensiable, containing datasets spanning Computer Vision, Natural Language Processing, and Audio Processing. 
 
-- The results of BestAcc have been updated! Note that we still have some experiments running in Azure, the current results will still be upadted and we will update all results and upload logs if all things done. I use single P100 for CIFAR-10 and SVHN, single P40 for STL-10, signle V100-32G for CIFAR-100.
-- We are using hundreds of GPUs of Azure to re-run all the experiments in the paper. We will clarify the gpu for each algorithm and dataset. Besides, we will make all the log files available soon.
+*15/02/2021*
+
+- The logs and model weights are shared! We notice that some model weights are missing. We will try to upload the missing model weights in the future.
+- The results of BestAcc have been updated! I use single P100 for CIFAR-10 and SVHN, single P40 for STL-10, signle V100-32G for CIFAR-100.
 
 ## Introduction
 
@@ -39,7 +42,9 @@ Besides, we implement our Curriculum Pseudo Labeling (CPL) method for Pseudo-Lab
 
 ## Main Results
 
-The results are best accuracies with standard errors. In the results, "40", "250", "1000" etc. under the dataset row denote different numbers of labeled samples (e.g., "40" in CIFAR-10 means that there are only 4 labeled samples for each class). We use random seed 0,1,2 for all experiments. All configs are included under the `config/` folder. You can directly cite these results in your own research.
+The results are best accuracies with standard errors. In the results, "40", "250", "1000" etc. under the dataset row denote different numbers of labeled samples (e.g., "40" in CIFAR-10 means that there are only 4 labeled samples for each class). We use random seed 0,1,2 for all experiments. All configs are included under the `config/` folder. You can directly cite these results in your own research. 
+
+Note FullySupervised results are from training the model using all training data in the dataset, regardless of the label amount denoted in the table.
 
 ### CIFAR-10 and CIFAR-100
 |                      |            |  CIFAR-10  |            |   |            | CIFAR100   |            |
@@ -75,6 +80,19 @@ The results are best accuracies with standard errors. In the results, "40", "250
 | FixMatch [8]         | 64.03±4.14 | 90.19±1.04 | 93.75±0.33 |   | 96.19±1.18 | 97.98±0.02 | 98.04±0.03 |
 | FlexMatch [9]        | 70.85±4.16 | 91.77±0.39 | 94.23±0.18 |   | 91.81±3.2  | 93.41±2.29 | 93.28±0.3  |
 
+### ImageNet
+
+|                      |100k labels |            |
+|----------------------|------------|------------|
+|                      | top-1      | top-5      |
+| FixMatch [8]         | 56.34      | 78.20      |
+| FlexMatch [9]        | 58.15      | 80.52      |
+
+## Logs and weights
+
+You can download the shared logs and weights here.
+
+https://1drv.ms/u/s!AlpW9hcyb0KvmyCfsCjGvhDXG5Nb?e=Xc6amH
 
 ## Usage
 
@@ -113,15 +131,17 @@ If you think this toolkit or the results are helpful to you and your research, p
 
 ## Maintainers
 
-Yidong Wang<sup>1</sup>, Hao Wu<sup>2</sup>, Bowen Zhang<sup>1</sup>, Wenxin Hou<sup>1,3</sup>, Yuhao Chen<sup>4</sup> Jindong Wang<sup>3</sup>
+Yidong Wang<sup>1</sup>, Hao Chen<sup>2</sup>, Yue Fan<sup>3</sup>, Hao Wu<sup>1</sup>, Bowen Zhang<sup>1</sup>, Wenxin Hou<sup>1,4</sup>, Yuhao Chen<sup>5</sup>, Jindong Wang<sup>4</sup>
 
-Shinozaki Lab<sup>1</sup> http://www.ts.ip.titech.ac.jp/
+Tokyo Institute of Technology<sup>1</sup>
 
-Okumura Lab<sup>2</sup> http://lr-www.pi.titech.ac.jp/wp/
+Carnegie Mellon University<sup>2</sup>
 
-Microsoft Research Asia<sup>3</sup>
+Max-Planck-Institut für Informatik<sup>3</sup>
 
-Megvii<sup>4</sup>
+Microsoft Research Asia<sup>4</sup>
+
+Megvii<sup>5</sup>
 
 ## Contributing
 
@@ -131,8 +151,8 @@ Megvii<sup>4</sup>
 ## Statements
 
 *For ImageNet datasets:* Please download the ImageNet 2014 dataset (unchanged from 2012) from the official site (link: https://image-net.org/challenges/LSVRC/2012/2012-downloads.php)
-Extract the train and the test set into *subfolders* (the val set is not used), and put them under `train/` and `val/` respectively. Each subfolder will represent a class.
-Note: the offical test set is not zipped into subfolders by classes, you may want to use: https://github.com/jiweibo/ImageNet/blob/master/valprep.sh, which is a nice script for preparing the file structure.
+Extract the train and the val set into *subfolders* (the test set is not used), and put them under `train/` and `val/` respectively. Each subfolder will represent a class.
+Note: the offical val set is not zipped into subfolders by classes, you may want to use: https://github.com/jiweibo/ImageNet/blob/master/valprep.sh, which is a nice script for preparing the file structure.
 
 ## References
 
