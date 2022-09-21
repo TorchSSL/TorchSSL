@@ -1,3 +1,5 @@
+TorchSSL is deprecated and no longer maintained. Please refer **[USB](https://github.com/microsoft/Semi-supervised-learning)**, an upgrade version of TorchSSL.
+
 # TorchSSL
 
 <img src="./figures/logo.png"  width = "100" height = "100" align='right' />
