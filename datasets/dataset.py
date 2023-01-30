@@ -85,6 +85,8 @@ class BasicDataset(Dataset):
                     return idx, img_w, self.strong_transform(img)
                 elif self.alg == 'flexmatch':
                     return idx, img_w, self.strong_transform(img)
+                elif self.alg == 'softmatch' or self.alg == 'freematch' or self.alg == 'freematch_entropy':
+                    return idx, img_w, self.strong_transform(img)
                 elif self.alg == 'pimodel':
                     return idx, img_w, self.transform(img)
                 elif self.alg == 'pseudolabel':

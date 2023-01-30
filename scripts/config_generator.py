@@ -96,6 +96,24 @@ def create_base_config(alg, seed,
     elif alg == 'pimodel':
         cfg['ulb_loss_ratio'] = 10
         cfg['uratio'] = 1
+    elif alg == 'freematch':
+        cfg['hard_label'] = True
+        cfg['T'] = 0.5
+        cfg['ulb_loss_ratio'] = 1.0
+        cfg['ent_loss_ratio'] = 0.0
+        cfg['uratio'] = 7
+    elif alg == 'freematch_entropy':
+        cfg['hard_label'] = True
+        cfg['T'] = 0.5
+        cfg['ulb_loss_ratio'] = 1.0
+        cfg['ent_loss_ratio'] = 0.01
+        cfg['uratio'] = 7
+    elif alg == 'softmatch':
+        cfg['hard_label'] = True
+        cfg['T'] = 0.5
+        cfg['ulb_loss_ratio'] = 1.0
+        cfg['uratio'] = 7
+        cfg['dist_align'] = True
 
     cfg['ema_m'] = 0.999
 
@@ -158,8 +176,8 @@ def create_base_config(alg, seed,
 
 # prepare the configuration for baseline model, use_penalty == False
 def exp_baseline(label_amount):
-    config_file = r'../config/'
-    save_path = r'../saved_models/'
+    config_file = r'./config/'
+    save_path = r'./saved_models/'
 
     if not os.path.exists(config_file):
         os.mkdir(config_file)
@@ -167,7 +185,7 @@ def exp_baseline(label_amount):
         os.mkdir(save_path)
 
     algs = ['flexmatch', 'fixmatch', 'uda', 'pseudolabel', 'fullysupervised', 'remixmatch', 'mixmatch', 'meanteacher',
-            'pimodel', 'vat']
+            'pimodel', 'vat', 'freematch', 'freematch_entropy', 'softmatch']
     datasets = ['cifar10', 'cifar100', 'svhn', 'stl10', 'imagenet']
     # datasets = ['imagenet']
     # seeds = [1, 11, 111]
@@ -230,8 +248,8 @@ def exp_baseline(label_amount):
 
 
 def exp_flex_component(label_amount):
-    config_file = r'../config/'
-    save_path = r'../saved_models/'
+    config_file = r'./config/'
+    save_path = r'./saved_models/'
 
     if not os.path.exists(config_file):
         os.mkdir(config_file)
@@ -293,10 +311,10 @@ def exp_flex_component(label_amount):
 
 
 if __name__ == '__main__':
-    if not os.path.exists('../saved_models/'):
-        os.mkdir('../saved_models/')
-    if not os.path.exists('../config/'):
-        os.mkdir('../config/')
+    if not os.path.exists('./saved_models/'):
+        os.mkdir('./saved_models/')
+    if not os.path.exists('./config/'):
+        os.mkdir('./config/')
     label_amount = {'s': [40, 400, 40, 40],
                     'm': [250, 2500, 250, 250],
                     'l': [4000, 10000, 1000, 1000]}
