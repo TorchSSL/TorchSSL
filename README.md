@@ -8,6 +8,9 @@ A Pytorch-based toolbox for semi-supervised learning. This is also the official 
 
 ## News and Updates
 
+*31/01/2023*
+ - We added the codes for [[FreeMatch](https://arxiv.org/abs/2205.07246)] and [[SoftMatch](https://arxiv.org/abs/2301.10921)]. Note that freematch.py refers to FreeMatch without SAF and freematch_entropy.py refers to FreeMatch with both SAT and SAF. The training logs can also be found at https://1drv.ms/u/s!AlpW9hcyb0KvmyCfsCjGvhDXG5Nb?e=Xc6amH
+
 *17/08/2022*
  - TorchSSL (this repo) is no longer maintained and updated. **We have created/updated a more comprehensive codebase and benchmark for Semi-Supervised Learning - [USB](https://github.com/microsoft/Semi-supervised-learning)**. It is built upon TorchSSL but more flexible to use and more extensiable, containing datasets spanning Computer Vision, Natural Language Processing, and Audio Processing. 
 
