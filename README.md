@@ -126,6 +126,20 @@ If you want to write your own algorithm, please follow the following steps:
 If you think this toolkit or the results are helpful to you and your research, please cite our paper:
 
 ```
+@article{wang2023freematch},
+  title={FreeMatch: Self-adaptive Thresholding for Semi-supervised Learning},
+  author={Wang, Yidong and Chen, Hao and Heng, Qiang and Hou, Wenxin and Fan, Yue and and Wu, Zhen and Wang, Jindong and Savvides, Marios and Shinozaki, Takahiro and Raj, Bhiksha and Schiele, Bernt and Xie, Xing},
+  booktitle={International Conference on Learning Representations (ICLR)},
+  year={2023}
+}
+
+@article{chen2023softmatch},
+  title={FreeMatch: Self-adaptive Thresholding for Semi-supervised Learning},
+  author={Chen, Hao and Tao, Ran and Fan, Yue and Wang, Yidong and Wang, Jindong and Schiele, Bernt and Xie, Xing and Raj, Bhiksha and Savvides, Marios},
+  booktitle={International Conference on Learning Representations (ICLR)},
+  year={2023}
+}
+
 @article{zhang2021flexmatch},
   title={FlexMatch: Boosting Semi-supervised Learning with Curriculum Pseudo Labeling},
   author={Zhang, Bowen and Wang, Yidong and Hou, Wenxin and Wu, Hao and Wang, Jindong and Okumura, Manabu and Shinozaki, Takahiro},
