@@ -134,7 +134,7 @@ If you think this toolkit or the results are helpful to you and your research, p
 }
 
 @article{chen2023softmatch},
-  title={FreeMatch: Self-adaptive Thresholding for Semi-supervised Learning},
+  title={SoftMatch: Addressing the Quantity-Quality Trade-off in Semi-supervised Learning},
   author={Chen, Hao and Tao, Ran and Fan, Yue and Wang, Yidong and Wang, Jindong and Schiele, Bernt and Xie, Xing and Raj, Bhiksha and Savvides, Marios},
   booktitle={International Conference on Learning Representations (ICLR)},
   year={2023}
