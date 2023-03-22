@@ -173,6 +173,7 @@ class MixMatch:
             if args.amp:
                 scaler.scale(total_loss).backward()
                 if (args.clip > 0):
+                    scaler.unscale_(self.optimizer)
                     torch.nn.utils.clip_grad_norm_(self.model.parameters(), args.clip)
                 scaler.step(self.optimizer)
                 scaler.update()
