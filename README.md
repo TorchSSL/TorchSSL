@@ -1,5 +1,8 @@
 # TorchSSL is deprecated and no longer maintained. Please refer **[USB](https://github.com/microsoft/Semi-supervised-learning)**, an upgrade version of TorchSSL. Training in USB only takes **12.5%** of training time of using TorchSSL, and produce better results.
 
+### Note. The results and logs we provided in this repo is based on code in commit **[f3e7eb5](https://github.com/TorchSSL/TorchSSL/commit/f3e7eb57c60078f17e1534bd7558e3d231e9d78c)**. The later modification and merged pull request on code will no longer be rerun for updating the results. 
+
+
 # TorchSSL
 
 <img src="./figures/logo.png"  width = "100" height = "100" align='right' />
