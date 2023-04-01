@@ -51,7 +51,7 @@ def entropy_loss(mask, logits_s, logits_w, prob_model, label_hist):
 
 
 
-def consistency_loss(logits_s, logits_w,time_p,p_model, name='ce', use_hard_labels=True):
+def consistency_loss(dataset, logits_s, logits_w,time_p,p_model, name='ce', use_hard_labels=True):
     assert name in ['ce', 'L2']
     logits_w = logits_w.detach()
     if name == 'L2':
@@ -66,7 +66,10 @@ def consistency_loss(logits_s, logits_w,time_p,p_model, name='ce', use_hard_labe
         max_probs, max_idx = torch.max(pseudo_label, dim=-1)
         p_cutoff = time_p
         p_model_cutoff = p_model / torch.max(p_model,dim=-1)[0]
-        mask = max_probs.ge(p_cutoff * p_model_cutoff[max_idx])
+        threshold = p_cutoff * p_model_cutoff[max_idx]
+        if dataset == 'svhn':
+            threshold = torch.clamp(threshold, min=0.9, max=0.95)
+        mask = max_probs.ge(threshold)
         if use_hard_labels:
             masked_loss = ce_loss(logits_s, max_idx, use_hard_labels, reduction='none') * mask.float()
         else:

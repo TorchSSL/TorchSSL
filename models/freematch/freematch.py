@@ -80,6 +80,101 @@ class FreeMatch:
         self.optimizer = optimizer
         self.scheduler = scheduler
 
+    def warmup(self, args, logger=None):
+        ngpus_per_node = torch.cuda.device_count()
+
+        self.model.train()
+
+        # for gpu profiling
+        start_batch = torch.cuda.Event(enable_timing=True)
+        end_batch = torch.cuda.Event(enable_timing=True)
+        start_run = torch.cuda.Event(enable_timing=True)
+        end_run = torch.cuda.Event(enable_timing=True)
+
+        warmup_it = 0
+        start_batch.record()
+
+        scaler = GradScaler()
+        amp_cm = autocast if args.amp else contextlib.nullcontext
+
+        for _, x_lb, y_lb in self.loader_dict['train_lb']:
+
+            # prevent the training iterations exceed args.num_train_iter
+            if warmup_it > 2048:
+                break
+
+            end_batch.record()
+            torch.cuda.synchronize()
+            start_run.record()
+
+            x_lb = x_lb.cuda(args.gpu)
+            y_lb = y_lb.cuda(args.gpu)
+
+            num_lb = x_lb.shape[0]
+
+            # inference and calculate sup/unsup losses
+            with amp_cm():
+
+                logits_x_lb = self.model(x_lb)
+                sup_loss = ce_loss(logits_x_lb, y_lb, use_hard_labels=True, reduction='mean')
+
+                total_loss = sup_loss
+
+            # parameter updates
+            if args.amp:
+                scaler.scale(total_loss).backward()
+                if (args.clip > 0):
+                    torch.nn.utils.clip_grad_norm_(self.model.parameters(), args.clip)
+                scaler.step(self.optimizer)
+                scaler.update()
+            else:
+                total_loss.backward()
+                if (args.clip > 0):
+                    torch.nn.utils.clip_grad_norm_(self.model.parameters(), args.clip)
+                self.optimizer.step()
+
+            self.model.zero_grad()
+
+            end_run.record()
+            torch.cuda.synchronize()
+
+            # tensorboard_dict update
+            tb_dict = {}
+            tb_dict['train/sup_loss'] = sup_loss.item()
+            tb_dict['lr'] = self.optimizer.param_groups[0]['lr']
+            tb_dict['train/prefecth_time'] = start_batch.elapsed_time(end_batch) / 1000.
+            tb_dict['train/run_time'] = start_run.elapsed_time(end_run) / 1000.
+
+            if warmup_it % 1000 == 0:
+                self.print_fn(f"warmup {warmup_it} iteration, {tb_dict}")
+
+            del tb_dict
+            start_batch.record()
+            warmup_it += 1
+
+        # compute p_model, time_p, 
+        self.model.eval()
+        probs = []
+        with torch.no_grad():
+            for _, x, y in self.loader_dict['eval']:
+
+                x = x.cuda(args.gpu)
+                y = y.cuda(args.gpu)
+
+                # inference and calculate sup/unsup losses
+                with amp_cm():
+                    logits = self.model(x)
+                probs.append(logits.softmax(dim=-1).cpu())
+        
+        probs = torch.cat(probs)
+        max_probs, max_idx = torch.max(probs, dim=-1)
+
+        self.time_p = max_probs.mean()
+        self.p_model = torch.mean(probs, dim=0)
+        label_hist = torch.bincount(max_idx, minlength=probs.shape[1]).to(probs.dtype) 
+        self.label_hist = label_hist / label_hist.sum()
+
+
     def train(self, args, logger=None):
 
         ngpus_per_node = torch.cuda.device_count()
@@ -141,7 +236,7 @@ class FreeMatch:
 
                 # hyper-params for update
                 time_p, p_model, label_hist = self.cal_time_p_and_p_model(logits_x_ulb_w, time_p, p_model, label_hist)
-                unsup_loss, mask = consistency_loss(logits_x_ulb_s,logits_x_ulb_w,
+                unsup_loss, mask = consistency_loss(args.dataset,logits_x_ulb_s,logits_x_ulb_w,
                                                     time_p,p_model,
                                                     'ce', use_hard_labels=args.hard_label)
                 total_loss = sup_loss + self.lambda_u * unsup_loss

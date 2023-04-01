@@ -186,9 +186,25 @@ def main_worker(gpu, ngpus_per_node, args):
  
     # Construct Dataset & DataLoader
     if args.dataset != "imagenet":
+        if args.num_labels == 10 and args.dataset == 'cifar10':
+            fixmatch_index = [
+                [7408, 8148, 9850, 10361, 33949, 36506, 37018, 45044, 46443, 47447], 
+                [5022, 8193, 8902, 9601, 25226, 26223, 34089, 35186, 40595, 48024], 
+                [7510, 13186, 14043, 21305, 22805, 31288, 34508, 40470, 41493, 45506], 
+                [9915, 9978, 16631, 19915, 28008, 35314, 35801, 36149, 39215, 42557], 
+                [6695, 14891, 19726, 22715, 23999, 34230, 46511, 47457, 49181, 49397], 
+                [12830, 20293, 26835, 30517, 30898, 31061, 43693, 46501, 47310, 48517], 
+                [1156, 11501, 19974, 21963, 32103, 42189, 46789, 47690, 48229, 48675], 
+                [4255, 6446, 8580, 11759, 12598, 29349, 29433, 33759, 35345, 38639]]
+            index = fixmatch_index[-args.seed - 1]
+            print("10 labels for cifar10")
+        else:
+            index = None
+
+
         train_dset = SSL_Dataset(args, alg='fixmatch', name=args.dataset, train=True,
                                 num_classes=args.num_classes, data_dir=args.data_dir)
-        lb_dset, ulb_dset = train_dset.get_ssl_dset(args.num_labels)
+        lb_dset, ulb_dset = train_dset.get_ssl_dset(args.num_labels,index=index)
 
         _eval_dset = SSL_Dataset(args, alg='fixmatch', name=args.dataset, train=False,
                                 num_classes=args.num_classes, data_dir=args.data_dir)

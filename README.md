@@ -1,6 +1,6 @@
 # TorchSSL is deprecated and no longer maintained. Please refer **[USB](https://github.com/microsoft/Semi-supervised-learning)**, an upgrade version of TorchSSL. Training in USB only takes **12.5%** of training time of using TorchSSL, and produce better results.
 
-### Note. The results and logs we provided in this repo is based on code in commit **[f3e7eb5](https://github.com/TorchSSL/TorchSSL/commit/f3e7eb57c60078f17e1534bd7558e3d231e9d78c)**. The later modification and merged pull request on code will no longer be rerun for updating the results. 
+### The later modification and merged pull request on TorchSSL code will no longer be rerun for updating the results. 
 
 
 # TorchSSL
@@ -37,6 +37,8 @@ TorchSSL is an all-in-one toolkit based on PyTorch for semi-supervised learning 
 7. ReMixMatch (ICLR 2019) [7]
 8. FixMatch (NeurIPS 2020) [8]
 9. FlexMatch (NeurIPS 2021) [9]
+10. FreeMatch (ICLR 2023) [10]
+11. SoftMatch (ICLR 2023) [11]
 
 Besides, we implement our Curriculum Pseudo Labeling (CPL) method for Pseudo-Label (Flex-Pseudo-Label) and UDA (Flex-UDA).
 
@@ -195,3 +197,7 @@ Note: the offical val set is not zipped into subfolders by classes, you may want
 [8] Kihyuk Sohn, David Berthelot, Nicholas Carlini, Zizhao Zhang, Han Zhang, Colin A Raf-fel, Ekin Dogus Cubuk, Alexey Kurakin, and Chun-Liang Li.  Fixmatch:  Simplifying semi-supervised learning with consistency and confidence.NeurIPS, 33, 2020.
 
 [9] Bowen Zhang, Yidong Wang, Wenxin Hou, Hao wu, Jindong Wang, Okumura Manabu, and Shinozaki Takahiro. FlexMatch: Boosting Semi-Supervised Learning with Curriculum Pseudo Labeling. NeurIPS, 2021.
+
+[10] Yidong Wang, Hao Chen, Qiang Heng, Wenxin Hou, Yue Fan, Zhen Wu, Jindong Wang, Marios Savvides, Takahiro Shinozaki, Bhiksha Raj, Bernt Schiele, Xing Xie. FreeMatch: Self-adaptive Thresholding for Semi-supervised Learning. ICLR, 2023.
+
+[11] Hao Chen, Ran Tao, Yue Fan, Yidong Wang, Marios Savvides, Jindong Wang, Bhiksha Raj, Xing Xie, Bernt Schiele. SoftMatch: Addressing the Quantity-Quality Tradeoff in Semi-supervised Learning. ICLR, 2023.

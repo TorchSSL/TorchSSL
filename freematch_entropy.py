@@ -240,6 +240,11 @@ def main_worker(gpu, ngpus_per_node, args):
     if args.resume:
         model.load_model(args.load_path)
 
+    if args.dataset == 'svhn':
+        print('warm up stage')
+        model.warmup(args, logger=logger)
+
+
     # START TRAINING of FreeMatch
     trainer = model.train
     for epoch in range(args.epoch):
