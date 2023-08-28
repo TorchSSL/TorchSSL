@@ -2,6 +2,9 @@
 
 ### The later modification and merged pull request on TorchSSL code will no longer be rerun for updating the results. 
 
+![image](https://github.com/TorchSSL/TorchSSL/assets/6158206/b8dbc71f-51e2-46a8-9697-f7df3e92bc5f)
+
+
 
 # TorchSSL
 
