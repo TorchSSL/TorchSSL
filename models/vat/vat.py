@@ -254,9 +254,7 @@ class Vat:
         groups = [batch // (nu + 1)] * (nu + 1)
         for x in range(batch - sum(groups)):
             groups[-x - 1] += 1
-        offsets = [0]
-        for g in groups:
-            offsets.append(offsets[-1] + g)
+        offsets = [0] + np.cumsum(groups).tolist())
         assert offsets[-1] == batch
         return offsets
 
